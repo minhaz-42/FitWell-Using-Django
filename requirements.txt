@@ -1,0 +1,37 @@
+# Core Django
+django>=4.2.0
+django-ninja>=0.22.0
+
+# API and utils
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+
+# For local Qwen server
+transformers[torch]>=4.30.0
+accelerate>=0.20.0
+uvicorn>=0.22.0
+fastapi>=0.95.0
+
+# Optional: for quantized models
+# bitsandbytes>=0.39.0
+
+# HTTP clients (for testing)
+requests>=2.28.0
+httpx>=0.24.0
+
+# OCR dependencies
+Pillow>=9.0.0
+pytesseract>=0.3.10
+
+# Support for safetensors checkpoints
+safetensors>=0.3.0
+
+# PDF generation
+reportlab>=4.0.0
+
+# Notes:
+# - `transformers[torch]` will attempt to install a compatible `torch` build. For
+#   Macs without CUDA, you may prefer installing the CPU-only wheel directly, e.g.: 
+#   `pip install torch --index-url https://download.pytorch.org/whl/cpu`
+# - Large models require significant disk space and RAM; ensure you have resources
+#   before trying to load big checkpoints locally.

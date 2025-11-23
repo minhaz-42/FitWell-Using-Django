@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile — NutriAI</title>
+  <style>
+    /* ============================================
+       UNIFIED STYLE SYSTEM (Matches Home)
+       ============================================ */
+    :root {
+      --primary: #4F46E5;
+      --primary-dark: #4338CA;
+      --primary-light: #C7D2FE;
+      --primary-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+      --secondary: #EC4899;
+      --accent: #10B981;
+      --light: #F8FAFC;
+      --light-gray: #F1F5F9;
+      --dark: #1E293B;
+      --gray: #64748B;
+      --gray-light: #E2E8F0;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --border-radius: 24px;
+      --border-radius-sm: 12px;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.15);
+      --shadow-lg: 0 25px 60px rgba(0, 0, 0, 0.1);
+      --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --transition-fast: all 0.2s ease;
+    }
+
+    .floating-elements {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .floating-element {
+      position: absolute;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(236, 72, 153, 0.03) 100%);
+      border-radius: 50%;
+      filter: blur(60px);
+      animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) translateX(0px); }
+      50% { transform: translateY(-20px) translateX(10px); }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      color: var(--dark);
+      background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+      min-height: 100vh;
+      font-weight: 400;
+      position: relative;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* Header */
+    header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      transition: var(--transition);
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 0;
+    }
+
+    .logo {
+      font-size: 1.875rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.5px;
+      transition: var(--transition);
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .logo::before {
+      content: "🧠";
+      font-size: 1.75rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--dark);
+      font-weight: 500;
+      padding: 10px 16px;
+      border-radius: var(--border-radius-sm);
+      transition: var(--transition-fast);
+      font-size: 0.95rem;
+      position: relative;
+      white-space: nowrap;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 16px;
+      width: 0;
+      height: 2px;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .nav-links a:hover::after {
+      width: calc(100% - 32px);
+    }
+
+    .nav-links a.active {
+      color: var(--primary);
+      font-weight: 600;
+      background: var(--primary-light);
+    }
+
+    .nav-links a.active::after {
+      width: calc(100% - 32px);
+    }
+
+    /* Main Content Layout */
+    .main-wrapper {
+      padding: 3rem 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2.5rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: var(--border-radius);
+      padding: 2.5rem 2rem;
+      height: fit-content;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 100px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+    }
+
+    .user-card {
+      text-align: center;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--gray-light);
+      padding-bottom: 2rem;
+    }
+
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 1rem;
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .user-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 0.25rem;
+    }
+
+    .user-email {
+      font-size: 0.85rem;
+      color: var(--gray);
+    }
+
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .sidebar-link {
+      padding: 0.9rem 1rem;
+      border-radius: var(--border-radius-sm);
+      text-decoration: none;
+      color: var(--dark);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* Content Area */
+    .content-area {
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Card */
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary-gradient);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--dark);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-box {
+      background: linear-gradient(135deg, var(--light) 0%, var(--light-gray) 100%);
+      padding: 1.75rem;
+      border-radius: var(--border-radius-sm);
+      text-align: center;
+      border: 1px solid var(--gray-light);
+      transition: var(--transition-fast);
+    }
+
+    .stat-box:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--gray);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--dark);
+    }
+
+    input, select, textarea {
+      padding: 0.875rem;
+      border: 2px solid var(--gray-light);
+      border-radius: var(--border-radius-sm);
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: var(--transition-fast);
+      background: white;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary-gradient);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: var(--border-radius-sm);
+      text-decoration: none;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      font-size: 0.95rem;
+    }
+
+    .btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: var(--transition);
+    }
+
+    .btn:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: var(--primary-gradient);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--light-gray);
+      color: var(--dark);
+      border: 2px solid var(--gray-light);
+    }
+
+    .btn-secondary:hover {
+      background: white;
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    /* Assessment Items */
+    .assessment-item {
+      background: linear-gradient(135deg, var(--light) 0%, var(--light-gray) 100%);
+      padding: 1.75rem;
+      border-radius: var(--border-radius-sm);
+      margin-bottom: 1.25rem;
+      transition: var(--transition);
+      border: 1px solid var(--gray-light);
+    }
+
+    .assessment-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+      border-color: var(--primary-light);
+    }
+
+    .assessment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .assessment-date {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .date-icon {
+      font-size: 1.5rem;
+    }
+
+    .date-label {
+      font-size: 0.75rem;
+      color: var(--gray);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .date-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .bmi-badge {
+      padding: 0.75rem 1.25rem;
+      border-radius: 25px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: var(--shadow);
+      min-width: 90px;
+    }
+
+    .bmi-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .bmi-label {
+      font-size: 0.65rem;
+    }
+
+    .bmi-normal { background: linear-gradient(135deg, var(--success) 0%, #059669 100%); }
+    .bmi-underweight { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+    .bmi-overweight { background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%); }
+    .bmi-obese { background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%); }
+
+    .assessment-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: var(--border-radius-sm);
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--gray);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--gray);
+    }
+
+    .empty-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .empty-state .btn {
+      color: white !important;
+      text-decoration: none !important;
+    }
+
+    .empty-state a:not(.btn) {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition-fast);
+    }
+
+    .empty-state a:not(.btn):hover {
+      text-decoration: underline;
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 1.25rem;
+      border-radius: var(--border-radius-sm);
+      margin-bottom: 1.5rem;
+      border-left: 4px solid;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+
+    .alert-success {
+      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+      border-color: var(--success);
+      color: #065f46;
+    }
+
+    .alert-error {
+      background: linear-gradient(135deg, #fef2f2 0%, #fef2f2 100%);
+      border-color: var(--danger);
+      color: #7f1d1d;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark);
+      color: white;
+      text-align: center;
+      padding: 2rem 0;
+      margin-top: 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    footer p {
+      font-weight: 500;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .container {
+        padding: 0 24px;
+      }
+
+      .profile-container {
+        grid-template-columns: 240px 1fr;
+        gap: 2rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 16px;
+      }
+
+      .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+      }
+
+      .nav-links a {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+      }
+
+      .navbar {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem 0;
+      }
+
+      .profile-container {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        top: 0;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .assessment-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+      }
+
+      .assessment-metrics {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      .card {
+        padding: 1.75rem;
+      }
+
+      .sidebar {
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .container {
+        padding: 0 12px;
+      }
+
+      .main-wrapper {
+        padding: 1.5rem 0;
+      }
+
+      .nav-links {
+        width: 100%;
+        gap: 0.5rem;
+      }
+
+      .nav-links a {
+        flex: 1;
+        text-align: center;
+        padding: 10px 8px;
+        font-size: 0.8rem;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+      }
+
+      .logo::before {
+        font-size: 1.25rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .stat-box {
+        padding: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-elements">
+    <div class="floating-element" style="width: 400px; height: 400px; top: -100px; right: -50px;"></div>
+    <div class="floating-element" style="width: 300px; height: 300px; bottom: 100px; left: 50px; animation-delay: 5s;"></div>
+  </div>
+
+  <header>
+    <div class="container">
+      <nav class="navbar">
+        <a href="{% url 'home' %}" class="logo">NutriAI</a>
+        <div class="nav-links">
+          <a href="{% url 'home' %}">Home</a>
+          <a href="{% url 'health' %}">Health Assessment</a>
+          <a href="{% url 'chat' %}">AI Nutritionist</a>
+          <a href="{% url 'profile' %}" class="active">Profile</a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}">Logout</a>
+          {% else %}
+            <a href="{% url 'login' %}">Login</a>
+          {% endif %}
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    <div class="container">
+      <div class="profile-container">
+        <aside class="sidebar">
+          <div class="user-card">
+            <div class="user-avatar">👤</div>
+            <div class="user-name">{{ user.first_name|default:user.username }}</div>
+            <div class="user-email">{{ user.email }}</div>
+          </div>
+
+          <nav class="sidebar-menu">
+            <a href="#personal-info" class="sidebar-link active" onclick="scrollToSection('personal-info'); return false;">📋 Personal Info</a>
+            <a href="#assessments" class="sidebar-link" onclick="scrollToSection('assessments'); return false;">📊 Assessments</a>
+            <a href="#account" class="sidebar-link" onclick="scrollToSection('account'); return false;">⚙️ Account</a>
+            <a href="{% url 'health' %}" class="sidebar-link">📈 New Assessment</a>
+            <a href="{% url 'assessment_history' %}" class="sidebar-link">📑 History</a>
+            <a href="{% url 'chat' %}" class="sidebar-link">💬 Chat</a>
+          </nav>
+        </aside>
+
+        <div class="content-area">
+          <h1>👤 Your Profile</h1>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{% if 'success' in message.tags %}success{% else %}error{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          {% if total_assessments > 0 %}
+            <div class="stats-grid">
+              <div class="stat-box">
+                <div class="stat-value">{{ total_assessments }}</div>
+                <div class="stat-label">Assessments</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-value">{{ latest_bmi|default:"-" }}</div>
+                <div class="stat-label">BMI</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-value">{% if bmi_trend == "increasing" %}↗{% elif bmi_trend == "decreasing" %}↘{% else %}→{% endif %}</div>
+                <div class="stat-label">BMI Trend</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-value">{% if weight_trend == "increasing" %}↗{% elif weight_trend == "decreasing" %}↘{% else %}→{% endif %}</div>
+                <div class="stat-label">Weight</div>
+              </div>
+            </div>
+          {% endif %}
+
+          <div class="card" id="personal-info">
+            <h2 class="card-title">📋 Personal Information</h2>
+            <form method="post">
+              {% csrf_token %}
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Height (cm)</label>
+                  <input type="number" name="height" value="{{ profile.height|default_if_none:'' }}" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label>Weight (kg)</label>
+                  <input type="number" name="weight" value="{{ profile.weight|default_if_none:'' }}" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label>Date of Birth</label>
+                  <input type="date" name="date_of_birth" value="{{ profile.date_of_birth|date:'Y-m-d'|default_if_none:'' }}">
+                </div>
+                <div class="form-group">
+                  <label>Gender</label>
+                  <select name="gender">
+                    <option value="">Select</option>
+                    <option value="M" {% if profile.gender == 'M' %}selected{% endif %}>Male</option>
+                    <option value="F" {% if profile.gender == 'F' %}selected{% endif %}>Female</option>
+                    <option value="O" {% if profile.gender == 'O' %}selected{% endif %}>Other</option>
+                    <option value="P" {% if profile.gender == 'P' %}selected{% endif %}>Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Activity Level</label>
+                  <select name="activity_level">
+                    <option value="">Select</option>
+                    <option value="sedentary" {% if profile.activity_level == 'sedentary' %}selected{% endif %}>Sedentary</option>
+                    <option value="light" {% if profile.activity_level == 'light' %}selected{% endif %}>Light</option>
+                    <option value="moderate" {% if profile.activity_level == 'moderate' %}selected{% endif %}>Moderate</option>
+                    <option value="active" {% if profile.activity_level == 'active' %}selected{% endif %}>Active</option>
+                    <option value="very_active" {% if profile.activity_level == 'very_active' %}selected{% endif %}>Very Active</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Health Goals</label>
+                  <input type="text" name="health_goals" value="{{ profile.health_goals|default_if_none:'' }}" placeholder="e.g., Lose weight">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Dietary Preferences</label>
+                <textarea name="dietary_preferences" placeholder="e.g., Vegetarian, Low-carb">{{ profile.dietary_preferences|default_if_none:'' }}</textarea>
+              </div>
+
+              <div class="form-group">
+                <label>Allergies & Restrictions</label>
+                <input type="text" name="allergies" value="{{ profile.food_allergies|default_if_none:'' }}" placeholder="e.g., Peanuts, Gluten">
+              </div>
+
+              <div class="button-group">
+                <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                <a href="{% url 'health' %}" class="btn btn-secondary">📊 New Assessment</a>
+                <a href="{% url 'assessment_history' %}" class="btn btn-secondary">📈 History</a>
+              </div>
+            </form>
+          </div>
+
+          <div class="card" id="assessments">
+            <h2 class="card-title">📊 Recent Assessments</h2>
+            {% if assessments %}
+              <div class="assessments-list">
+                {% for assessment in assessments %}
+                  <div class="assessment-item">
+                    <div class="assessment-header">
+                      <div class="assessment-date">
+                        <div class="date-icon">📅</div>
+                        <div>
+                          <div class="date-label">Assessment Date</div>
+                          <div class="date-value">{{ assessment.assessment_date|date:"M d, Y" }}</div>
+                        </div>
+                      </div>
+                      <div class="bmi-badge bmi-{{ assessment.bmi_category|lower|cut:' ' }}">
+                        <span class="bmi-value">{{ assessment.bmi|floatformat:1 }}</span>
+                        <span class="bmi-label">BMI</span>
+                      </div>
+                    </div>
+                    <div class="assessment-metrics">
+                      <div class="metric">
+                        <span class="metric-label">Height:</span>
+                        <span class="metric-value">{{ assessment.height }} cm</span>
+                      </div>
+                      <div class="metric">
+                        <span class="metric-label">Weight:</span>
+                        <span class="metric-value">{{ assessment.weight }} kg</span>
+                      </div>
+                      <div class="metric">
+                        <span class="metric-label">Activity Level:</span>
+                        <span class="metric-value">{{ assessment.get_activity_level_display }}</span>
+                      </div>
+                      <div class="metric">
+                        <span class="metric-label">Daily Calories:</span>
+                        <span class="metric-value">{{ assessment.maintenance_calories|default:"—" }}</span>
+                      </div>
+                    </div>
+                    <a href="{% url 'assessment_detail' assessment.id %}" class="btn btn-secondary">View Details →</a>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                <p>No assessments yet.</p>
+                <a href="{% url 'health' %}" class="btn btn-primary">Create Your First Assessment</a>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="card" id="account">
+            <h2 class="card-title">⚙️ Account Settings</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--gray); font-weight: 500;">Member since {{ user.date_joined|date:"F d, Y" }}</p>
+            <div class="button-group">
+              <a href="{% url 'delete_account' %}" class="btn btn-danger">🗑️ Delete Account</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 NutriAI — Your AI-Powered Nutrition Companion</p>
+  </footer>
+
+  <script>
+    function scrollToSection(sectionId) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+          // Update active sidebar link
+          document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.remove('active');
+          });
+          document.querySelector(`a[href="#${sectionId}"]`).classList.add('active');
+        }, 100);
+      }
+    }
+
+    document.querySelectorAll('a[href*="delete_account"]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        if (!confirm('Delete account? This cannot be undone.')) e.preventDefault();
+      });
+    });
+  </script>
+</body>
+</html>

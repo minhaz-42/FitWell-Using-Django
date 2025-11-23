@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Assessment — NutriAI</title>
+    <style>
+        /* Enhanced Design System */
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #C7D2FE;
+            --primary-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            --secondary: #EC4899;
+            --accent: #10B981;
+            --light: #F8FAFC;
+            --light-gray: #F1F5F9;
+            --dark: #1E293B;
+            --gray: #64748B;
+            --gray-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --border-radius: 24px;
+            --border-radius-sm: 12px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 25px 60px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-fast: all 0.2s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+            min-height: 100vh;
+            font-weight: 400;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        /* Enhanced Header Styles */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 0;
+        }
+        
+        .logo {
+            font-size: 1.875rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+            transition: var(--transition);
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo::before {
+            content: "🧠";
+            font-size: 1.75rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition-fast);
+            font-size: 0.95rem;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+        
+        .nav-links a.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .nav-links a.active::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 16px;
+            right: 16px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+        
+        /* Enhanced Main Content */
+        .main-content {
+            padding: 3rem 0;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .page-header h1 {
+            font-size: 3.25rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+        
+        .page-header p {
+            font-size: 1.25rem;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        /* Enhanced Assessment Container */
+        .assessment-container {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+        
+        /* Enhanced Form Styles */
+        .assessment-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .assessment-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+        }
+        
+        .assessment-form::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--primary-gradient);
+        }
+        
+        .form-section {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+        }
+        
+        .form-section:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .form-section h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        .form-section h3::before {
+            content: "📋";
+            font-size: 1.25rem;
+        }
+        
+        .form-group {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            transition: var(--transition-fast);
+            background: white;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .input-with-unit {
+            position: relative;
+        }
+        
+        .unit {
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .form-help {
+            font-size: 0.875rem;
+            color: var(--gray);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        /* Enhanced Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.25rem 3rem;
+            border-radius: var(--border-radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            font-size: 1.1rem;
+            margin: 2rem auto 0;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: var(--transition);
+        }
+        
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-download::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: var(--transition);
+        }
+        
+        .btn-download:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .btn-download:hover::before {
+            left: 100%;
+        }
+        
+        /* Enhanced Results Section */
+        .results-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .results-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+        }
+        
+        .results-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--primary-gradient);
+        }
+        
+        .results-section.visible {
+            display: block;
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+        }
+        
+        .results-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .results-header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        .bmi-result {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            background: var(--primary-gradient);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(79, 70, 229, 0.3);
+        }
+        
+        .bmi-result::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+        
+        .bmi-value {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        
+        .bmi-category {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .bmi-description {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+            position: relative;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .result-card {
+            background: var(--light-gray);
+            border-radius: var(--border-radius-sm);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary);
+        }
+        
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+            border-color: var(--primary-light);
+        }
+        
+        .result-card h3 {
+            font-size: 0.875rem;
+            color: var(--gray);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        
+        .result-card .value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+        
+        .result-card .label {
+            font-size: 0.875rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .meal-suggestions {
+            margin-top: 3rem;
+        }
+        
+        .meal-suggestions h3 {
+            margin-bottom: 2rem;
+            color: var(--dark);
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .meal-suggestions h3::before {
+            content: "🍽️";
+            font-size: 1.5rem;
+        }
+        
+        .meal-card {
+            background: var(--light-gray);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border-left: 6px solid var(--primary);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .meal-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+        
+        .meal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .meal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .meal-type {
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+            background: var(--primary-light);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        
+        .meal-calories {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+        
+        .meal-name {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            font-size: 1.5rem;
+        }
+        
+        .meal-description {
+            color: var(--gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+        
+        .nutrition-facts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: var(--border-radius-sm);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .nutrition-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition-fast);
+        }
+        
+        .nutrition-item:hover {
+            background: var(--light-gray);
+        }
+        
+        .nutrition-value {
+            font-weight: 800;
+            color: var(--dark);
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .nutrition-label {
+            font-size: 0.875rem;
+            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .ingredients {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--gray-light);
+        }
+        
+        .ingredients h4 {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .ingredients p {
+            font-size: 0.95rem;
+            color: var(--gray);
+            line-height: 1.6;
+            background: white;
+            padding: 1.25rem;
+            border-radius: var(--border-radius-sm);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Enhanced BMI Scale */
+        .bmi-scale {
+            margin-top: 3rem;
+            background: var(--light-gray);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .bmi-scale h3 {
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .scale {
+            height: 16px;
+            background: linear-gradient(90deg, 
+                #3B82F6 0%, 
+                #10B981 20%, 
+                #10B981 40%, 
+                #F59E0B 60%, 
+                #EF4444 80%, 
+                #EF4444 100%);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .scale-marker {
+            position: absolute;
+            top: -6px;
+            width: 6px;
+            height: 28px;
+            background: var(--dark);
+            transform: translateX(-50%);
+            border-radius: 3px;
+            transition: left 1s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+            font-weight: 600;
+        }
+        
+        /* Enhanced Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--gray-light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        /* Enhanced Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: var(--primary-light);
+        }
+        
+        .footer-section a {
+            color: var(--gray-light);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: var(--transition-fast);
+        }
+        
+        .footer-section a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray);
+            color: var(--gray-light);
+            text-align: center;
+        }
+        
+        /* Floating Elements */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--primary-light);
+            opacity: 0.3;
+            animation: float 20s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg) translateZ(0);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg) translateZ(10px);
+            }
+            100% {
+                transform: translateY(0) rotate(360deg) translateZ(0);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 100%;
+                padding: 0 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .page-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .assessment-form,
+            .results-section {
+                padding: 2rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .nutrition-facts {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 12px;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .bmi-value {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Background Elements -->
+    <div class="floating-elements">
+        <div class="floating-element" style="width: 120px; height: 120px; top: 10%; left: 5%;"></div>
+        <div class="floating-element" style="width: 80px; height: 80px; top: 70%; left: 85%;"></div>
+        <div class="floating-element" style="width: 100px; height: 100px; top: 40%; left: 80%;"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo">NutriAI</a>
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="{% url 'health' %}" class="active">Health Assessment</a>
+                    <a href="{% url 'chat' %}">AI Nutritionist</a>
+                    <a href="{% url 'profile' %}">Profile</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}">Login</a>
+                        <a href="{% url 'register' %}">Register</a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>Health Assessment</h1>
+                <p>Complete all the questions below to get your personalized health assessment and nutrition recommendations.</p>
+            </div>
+            
+            <div class="assessment-container">
+                <!-- Assessment Form -->
+                <div class="assessment-form" id="assessmentForm">
+                    <form id="healthForm">
+                        {% csrf_token %}
+                        <!-- Personal Information Section -->
+                        <div class="form-section">
+                            <h3>Personal Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="height">Height (cm)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="height" name="height" min="50" max="250" step="0.1" placeholder="Enter your height" required>
+                                        <span class="unit">cm</span>
+                                    </div>
+                                    <div class="form-help">Enter your height in centimeters</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="weight">Weight (kg)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="weight" name="weight" min="20" max="300" step="0.1" placeholder="Enter your weight" required>
+                                        <span class="unit">kg</span>
+                                    </div>
+                                    <div class="form-help">Enter your current weight in kilograms</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="age">Age</label>
+                                    <input type="number" id="age" name="age" min="1" max="120" placeholder="Enter your age" required>
+                                    <div class="form-help">Your current age in years</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="gender">Gender</label>
+                                    <select id="gender" name="gender" required>
+                                        <option value="">Select your gender</option>
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                        <option value="O">Other</option>
+                                    </select>
+                                    <div class="form-help">This helps calculate accurate calorie needs</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lifestyle Section -->
+                        <div class="form-section">
+                            <h3>Lifestyle & Goals</h3>
+                            <div class="form-group">
+                                <label for="activity">Activity Level</label>
+                                <select id="activity" name="activity" required>
+                                    <option value="">Select your activity level</option>
+                                    <option value="sedentary">Sedentary (little or no exercise)</option>
+                                    <option value="light">Lightly active (light exercise 1-3 days/week)</option>
+                                    <option value="moderate">Moderately active (moderate exercise 3-5 days/week)</option>
+                                    <option value="active">Very active (hard exercise 6-7 days/week)</option>
+                                    <option value="very_active">Extremely active (very hard exercise & physical job)</option>
+                                </select>
+                                <div class="form-help">How active are you in your daily life?</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="goal">Health Goal</label>
+                                <select id="goal" name="goal" required>
+                                    <option value="">Select your primary goal</option>
+                                    <option value="weight_loss">Lose Weight</option>
+                                    <option value="maintain">Maintain Weight</option>
+                                    <option value="muscle_gain">Build Muscle</option>
+                                    <option value="improve_health">Improve Overall Health</option>
+                                </select>
+                                <div class="form-help">What are you trying to achieve?</div>
+                            </div>
+                        </div>
+
+                        <!-- Dietary Preferences Section -->
+                        <div class="form-section">
+                            <h3>Dietary Preferences</h3>
+                            <div class="form-group">
+                                <label for="preferences">Dietary Restrictions & Preferences</label>
+                                <textarea id="preferences" name="preferences" rows="3" placeholder="e.g., Vegetarian, Low-carb, No dairy, Gluten-free, Food allergies..."></textarea>
+                                <div class="form-help">List any dietary restrictions, allergies, or preferences</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="allergies">Food Allergies</label>
+                                <input type="text" id="allergies" name="allergies" placeholder="e.g., Nuts, Shellfish, Dairy">
+                                <div class="form-help">List any food allergies you have</div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn" id="submitBtn">
+                            <span>Get My Health Assessment</span>
+                        </button>
+                    </form>
+                    
+                    <div class="loading" id="loading">
+                        <div class="loading-spinner"></div>
+                        <p id="loadingMessage">Analyzing your health profile...</p>
+                        <p style="font-size: 0.9rem; color: var(--gray); margin-top: 1rem;">
+                            <small id="loadingStatus">Calling AI model... (may take 1-2 minutes)</small>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div class="results-section" id="resultsSection">
+                    <div class="results-header">
+                        <h2>Your Health Assessment Results</h2>
+                        <p>Personalized insights and recommendations based on your profile</p>
+                        <button class="btn-download" id="downloadPdfBtn" style="margin-top: 1rem;">
+                            <span>📥 Download as PDF</span>
+                        </button>
+                    </div>
+                    
+                    <div class="bmi-result">
+                        <div class="bmi-value" id="bmiValue">23.5</div>
+                        <div class="bmi-category" id="bmiCategory">Normal Weight</div>
+                        <div class="bmi-description" id="bmiDescription">Your weight is within a healthy range for your height.</div>
+                    </div>
+                    
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <h3>BMR</h3>
+                            <div class="value" id="bmrValue">1,650</div>
+                            <div class="label">calories/day</div>
+                        </div>
+                        <div class="result-card">
+                            <h3>Maintenance</h3>
+                            <div class="value" id="maintenanceValue">2,150</div>
+                            <div class="label">calories/day</div>
+                        </div>
+                        <div class="result-card">
+                            <h3>Target</h3>
+                            <div class="value" id="targetValue">1,900</div>
+                            <div class="label">calories/day</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bmi-scale">
+                        <h3>BMI Scale</h3>
+                        <div class="scale" id="bmiScale">
+                            <div class="scale-marker" id="bmiMarker" style="left: 47%;"></div>
+                        </div>
+                        <div class="scale-labels">
+                            <span>Underweight</span>
+                            <span>Normal</span>
+                            <span>Overweight</span>
+                            <span>Obese</span>
+                        </div>
+                    </div>
+                    
+                    <div class="meal-suggestions">
+                        <h3>Recommended Meals</h3>
+                        
+                        <div class="meal-card">
+                            <div class="meal-header">
+                                <span class="meal-type">Breakfast</span>
+                                <span class="meal-calories">450 cal</span>
+                            </div>
+                            <div class="meal-name" id="breakfastName">High-Protein Oatmeal</div>
+                            <div class="meal-description" id="breakfastDescription">Nutrient-dense oatmeal with protein boost for sustained energy throughout your morning.</div>
+                            
+                            <div class="nutrition-facts">
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value" id="breakfastProtein">20g</div>
+                                    <div class="nutrition-label">Protein</div>
+                                </div>
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value" id="breakfastCarbs">65g</div>
+                                    <div class="nutrition-label">Carbs</div>
+                                </div>
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value" id="breakfastFats">12g</div>
+                                    <div class="nutrition-label">Fats</div>
+                                </div>
+                            </div>
+                            
+                            <div class="ingredients">
+                                <h4>Ingredients</h4>
+                                <p id="breakfastIngredients">Oats, milk, protein powder, banana, nuts, honey</p>
+                            </div>
+                        </div>
+                        
+                        <div class="meal-card">
+                            <div class="meal-header">
+                                <span class="meal-type">Lunch</span>
+                                <span class="meal-calories">520 cal</span>
+                            </div>
+                            <div class="meal-name" id="lunchName">Chicken Avocado Wrap</div>
+                            <div class="meal-description" id="lunchDescription">Protein-packed wrap with healthy fats for sustained energy and muscle recovery.</div>
+                            
+                            <div class="nutrition-facts">
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value" id="lunchProtein">35g</div>
+                                    <div class="nutrition-label">Protein</div>
+                                </div>
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value" id="lunchCarbs">45g</div>
+                                    <div class="nutrition-label">Carbs</div>
+                                </div>
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value" id="lunchFats">22g</div>
+                                    <div class="nutrition-label">Fats</div>
+                                </div>
+                            </div>
+                            
+                            <div class="ingredients">
+                                <h4>Ingredients</h4>
+                                <p id="lunchIngredients">Whole wheat wrap, grilled chicken, avocado, cheese, vegetables</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Helper function to get CSRF token from cookies
+        function getCsrfToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('healthForm');
+            const resultsSection = document.getElementById('resultsSection');
+            const loading = document.getElementById('loading');
+            const submitBtn = document.getElementById('submitBtn');
+            const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+            
+            // Store current assessment data for PDF download
+            let currentAssessmentData = null;
+            
+            // Initially hide results
+            resultsSection.style.display = 'none';
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Validate form
+                if (!validateForm()) {
+                    return;
+                }
+                
+                // Show loading state
+                submitBtn.style.display = 'none';
+                loading.style.display = 'block';
+                
+                // Get form values
+                const height = parseFloat(document.getElementById('height').value);
+                const weight = parseFloat(document.getElementById('weight').value);
+                const age = parseInt(document.getElementById('age').value);
+                const gender = document.getElementById('gender').value;
+                const activity = document.getElementById('activity').value;
+                const goal = document.getElementById('goal').value;
+                const preferences = document.getElementById('preferences').value;
+                const allergies = document.getElementById('allergies').value;
+                
+                // Start timer to show elapsed time
+                let startTime = Date.now();
+                let timerInterval = setInterval(() => {
+                    let elapsed = Math.floor((Date.now() - startTime) / 1000);
+                    let minutes = Math.floor(elapsed / 60);
+                    let seconds = elapsed % 60;
+                    let timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                    document.getElementById('loadingStatus').textContent = `Waiting for AI response... (${timeStr} elapsed)`;
+                }, 1000);
+                
+                try {
+                    // Get CSRF token from cookie or meta tag
+                    let csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+                    if (!csrfToken) {
+                        csrfToken = getCsrfToken();
+                    }
+                    
+                    console.log('CSRF Token:', csrfToken ? 'Found' : 'Not found');
+                    console.log('Submitting to: /api/v1/health-assessment');
+                    
+                    // Create abort controller with 180 second timeout (Qwen can be slow)
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => {
+                        console.log('Request timeout after 180s');
+                        controller.abort();
+                    }, 180000);
+                    
+                    console.log('Sending health assessment request with data:', {
+                        height, weight, age, gender, activity, goal,
+                        preferences: preferences ? `${preferences.substring(0, 20)}...` : 'none',
+                        allergies: allergies ? `${allergies.substring(0, 20)}...` : 'none'
+                    });
+                    
+                    // Call the API endpoint
+                    const fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(csrfToken && { 'X-CSRFToken': csrfToken })
+                        },
+                        body: JSON.stringify({
+                            height: height,
+                            weight: weight,
+                            age: age,
+                            gender: gender,
+                            activity: activity,
+                            goal: goal,
+                            preferences: preferences || null,
+                            allergies: allergies || null
+                        }),
+                        signal: controller.signal,
+                        credentials: 'same-origin'
+                    };
+                    
+                    console.log('Fetch options:', fetchOptions);
+                    
+                    const response = await fetch('/api/v1/health-assessment', fetchOptions);
+                    
+                    clearTimeout(timeoutId);
+                    clearInterval(timerInterval);
+                    
+                    console.log('Response status:', response.status, response.statusText);
+                    console.log('Response headers:', {
+                        'content-type': response.headers.get('content-type'),
+                        'x-frame-options': response.headers.get('x-frame-options')
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('API Error Response:', errorText);
+                        const errorMsg = `API error: ${response.status} ${response.statusText}`;
+                        console.error('Throwing error:', errorMsg);
+                        throw new Error(errorMsg);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('Response JSON received:', {
+                        bmi: data.bmi,
+                        bmi_category: data.bmi_category,
+                        breakfast: data.breakfast?.name,
+                        lunch: data.lunch?.name,
+                        dinner: data.dinner?.name
+                    });
+                    
+                    // Store assessment data for PDF download
+                    currentAssessmentData = data;
+                    
+                    // Update UI with results from API
+                    updateResults(data);
+                    
+                    // Hide loading, show results
+                    loading.style.display = 'none';
+                    resultsSection.style.display = 'block';
+                    resultsSection.classList.add('visible');
+                    
+                    // Scroll to results
+                    resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Show submit button again
+                    submitBtn.style.display = 'block';
+                    
+                    console.log('✅ Assessment completed successfully!');
+                } catch (error) {
+                    clearInterval(timerInterval);
+                    console.error('❌ Error in assessment:', error);
+                    console.error('Error name:', error.name);
+                    console.error('Error message:', error.message);
+                    console.error('Error stack:', error.stack);
+                    
+                    if (error.name === 'AbortError') {
+                        alert('Request timeout (180+ seconds). The Qwen AI model is taking too long. This usually means:\n\n1. The Qwen server might be busy\n2. Your system is slow\n3. Try again in a few moments\n\nMake sure the Qwen server is running.\n\nCheck the browser console (F12) for more details.');
+                    } else if (error.message.includes('Failed to fetch')) {
+                        alert('Network error: Failed to connect to the server.\n\nPlease make sure:\n1. Django server is running (python manage.py runserver)\n2. You can access http://localhost:8000 in your browser\n3. Check browser console (F12) for more details\n\nError: ' + error.message);
+                    } else {
+                        alert('Error processing health assessment:\n\n' + error.message + '\n\nCheck the browser console (F12) for more details.');
+                    }
+                    submitBtn.style.display = 'block';
+                    loading.style.display = 'none';
+                }
+            });
+            
+            // PDF Download functionality
+            downloadPdfBtn.addEventListener('click', async function() {
+                if (!currentAssessmentData) {
+                    alert('No assessment data available. Please complete the assessment first.');
+                    return;
+                }
+                
+                downloadPdfBtn.disabled = true;
+                downloadPdfBtn.textContent = '📥 Generating PDF...';
+                
+                try {
+                    const response = await fetch('/api/v1/health-assessment/download-pdf', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(currentAssessmentData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Failed to generate PDF: ${response.statusText}`);
+                    }
+                    
+                    // Get the PDF blob
+                    const blob = await response.blob();
+                    
+                    // Create a download link
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `NutriAI_MealPlan_${new Date().toISOString().slice(0,10)}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error generating PDF: ' + error.message);
+                } finally {
+                    downloadPdfBtn.disabled = false;
+                    downloadPdfBtn.innerHTML = '<span>📥 Download as PDF</span>';
+                }
+            });
+            
+            function validateForm() {
+                const height = document.getElementById('height').value;
+                const weight = document.getElementById('weight').value;
+                const age = document.getElementById('age').value;
+                const gender = document.getElementById('gender').value;
+                const activity = document.getElementById('activity').value;
+                const goal = document.getElementById('goal').value;
+                
+                if (!height || !weight || !age || !gender || !activity || !goal) {
+                    alert('Please fill in all required fields.');
+                    return false;
+                }
+                
+                if (height < 50 || height > 250) {
+                    alert('Please enter a valid height between 50cm and 250cm.');
+                    return false;
+                }
+                
+                if (weight < 20 || weight > 300) {
+                    alert('Please enter a valid weight between 20kg and 300kg.');
+                    return false;
+                }
+                
+                if (age < 1 || age > 120) {
+                    alert('Please enter a valid age between 1 and 120 years.');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            
+            function updateResults(data) {
+                const bmi = data.bmi;
+                const bmiCategory = data.bmi_category;
+                const calorieData = {
+                    bmr: data.bmr,
+                    maintenance_calories: data.maintenance_calories,
+                    target_calories: data.target_calories
+                };
+                const meals = {
+                    breakfast: data.breakfast,
+                    lunch: data.lunch,
+                    dinner: data.dinner
+                };
+                
+                // Update BMI values
+                document.getElementById('bmiValue').textContent = bmi;
+                document.getElementById('bmiCategory').textContent = bmiCategory;
+                
+                // Update BMI description
+                let description = "";
+                if (bmiCategory === "Underweight") {
+                    description = "Consider increasing calorie intake with nutrient-dense foods and strength training.";
+                } else if (bmiCategory === "Normal Weight") {
+                    description = "Your weight is within a healthy range for your height. Maintain your healthy habits!";
+                } else if (bmiCategory === "Overweight") {
+                    description = "A balanced diet and regular exercise can help you reach a healthy weight.";
+                } else {
+                    description = "Consult with a healthcare provider for a personalized weight management plan.";
+                }
+                document.getElementById('bmiDescription').textContent = description;
+                
+                // Update calorie values
+                document.getElementById('bmrValue').textContent = calorieData.bmr.toLocaleString();
+                document.getElementById('maintenanceValue').textContent = calorieData.maintenance_calories.toLocaleString();
+                document.getElementById('targetValue').textContent = calorieData.target_calories.toLocaleString();
+                
+                // Update BMI scale marker position
+                let markerPosition = 0;
+                if (bmi < 18.5) {
+                    markerPosition = (bmi / 18.5) * 20;
+                } else if (bmi < 25) {
+                    markerPosition = 20 + ((bmi - 18.5) / 6.5) * 20;
+                } else if (bmi < 30) {
+                    markerPosition = 40 + ((bmi - 25) / 5) * 20;
+                } else {
+                    markerPosition = 60 + (Math.min((bmi - 30) / 20, 1) * 40);
+                }
+                document.getElementById('bmiMarker').style.left = `${markerPosition}%`;
+                
+                // Helper function to safely get text from nested objects
+                const safeGet = (obj, key, fallback = '') => {
+                    if (Array.isArray(obj[key])) {
+                        return obj[key].join(', ');
+                    }
+                    return obj[key] || fallback;
+                };
+                
+                // Update breakfast meal
+                document.getElementById('breakfastName').textContent = meals.breakfast.name;
+                document.getElementById('breakfastDescription').textContent = meals.breakfast.description;
+                document.querySelector('.meal-card:nth-of-type(1) .meal-calories').textContent = `${meals.breakfast.calories} cal`;
+                document.getElementById('breakfastProtein').textContent = `${meals.breakfast.protein_g}g`;
+                document.getElementById('breakfastCarbs').textContent = `${meals.breakfast.carbs_g}g`;
+                document.getElementById('breakfastFats').textContent = `${meals.breakfast.fats_g}g`;
+                document.getElementById('breakfastIngredients').textContent = safeGet(meals.breakfast, 'ingredients');
+                
+                // Update lunch meal
+                document.getElementById('lunchName').textContent = meals.lunch.name;
+                document.getElementById('lunchDescription').textContent = meals.lunch.description;
+                document.querySelector('.meal-card:nth-of-type(2) .meal-calories').textContent = `${meals.lunch.calories} cal`;
+                document.getElementById('lunchProtein').textContent = `${meals.lunch.protein_g}g`;
+                document.getElementById('lunchCarbs').textContent = `${meals.lunch.carbs_g}g`;
+                document.getElementById('lunchFats').textContent = `${meals.lunch.fats_g}g`;
+                document.getElementById('lunchIngredients').textContent = safeGet(meals.lunch, 'ingredients');
+                
+                // Add dinner meal if provided
+                const mealSuggestions = document.querySelector('.meal-suggestions');
+                let dinnerCard = document.querySelector('.meal-card:nth-of-type(3)');
+                
+                if (!dinnerCard && meals.dinner) {
+                    dinnerCard = document.createElement('div');
+                    dinnerCard.className = 'meal-card';
+                    dinnerCard.innerHTML = `
+                        <div class="meal-header">
+                            <span class="meal-type">Dinner</span>
+                            <span class="meal-calories">${meals.dinner.calories} cal</span>
+                        </div>
+                        <div class="meal-name">${meals.dinner.name}</div>
+                        <div class="meal-description">${meals.dinner.description}</div>
+                        
+                        <div class="nutrition-facts">
+                            <div class="nutrition-item">
+                                <div class="nutrition-value">${meals.dinner.protein_g}g</div>
+                                <div class="nutrition-label">Protein</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-value">${meals.dinner.carbs_g}g</div>
+                                <div class="nutrition-label">Carbs</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-value">${meals.dinner.fats_g}g</div>
+                                <div class="nutrition-label">Fats</div>
+                            </div>
+                        </div>
+                        
+                        <div class="ingredients">
+                            <h4>Ingredients</h4>
+                            <p>${safeGet(meals.dinner, 'ingredients')}</p>
+                        </div>
+                    `;
+                    mealSuggestions.appendChild(dinnerCard);
+                } else if (dinnerCard && meals.dinner) {
+                    dinnerCard.querySelector('.meal-calories').textContent = `${meals.dinner.calories} cal`;
+                    dinnerCard.querySelector('.meal-name').textContent = meals.dinner.name;
+                    dinnerCard.querySelector('.meal-description').textContent = meals.dinner.description;
+                    dinnerCard.querySelectorAll('.nutrition-value')[0].textContent = `${meals.dinner.protein_g}g`;
+                    dinnerCard.querySelectorAll('.nutrition-value')[1].textContent = `${meals.dinner.carbs_g}g`;
+                    dinnerCard.querySelectorAll('.nutrition-value')[2].textContent = `${meals.dinner.fats_g}g`;
+                    dinnerCard.querySelector('.ingredients p').textContent = safeGet(meals.dinner, 'ingredients');
+                }
+                
+                // Add analysis section
+                const resultsSection = document.getElementById('resultsSection');
+                let analysisSection = resultsSection.querySelector('.analysis-section');
+                
+                if (!analysisSection) {
+                    analysisSection = document.createElement('div');
+                    analysisSection.className = 'analysis-section';
+                    analysisSection.style.cssText = `
+                        background: var(--primary-light);
+                        border-radius: var(--border-radius-sm);
+                        padding: 2rem;
+                        margin-top: 3rem;
+                        border-left: 6px solid var(--primary);
+                    `;
+                    mealSuggestions.parentElement.appendChild(analysisSection);
+                }
+                
+                analysisSection.innerHTML = `
+                    <h3 style="color: var(--primary); margin-bottom: 1rem;">Your Health Analysis</h3>
+                    <p style="color: var(--dark); line-height: 1.6;">${data.analysis || 'Assessment complete!'}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

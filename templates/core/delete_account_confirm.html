@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account — NutriAI</title>
+    <style>
+        /* Unified Design System */
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #C7D2FE;
+            --primary-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            --secondary: #EC4899;
+            --accent: #10B981;
+            --light: #F8FAFC;
+            --light-gray: #F1F5F9;
+            --dark: #1E293B;
+            --gray: #64748B;
+            --gray-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --danger-dark: #DC2626;
+            --danger-light: #FECACA;
+            --border-radius: 24px;
+            --border-radius-sm: 12px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 25px 60px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-fast: all 0.2s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .warning-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .warning-header {
+            background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .warning-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .warning-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .warning-header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        .warning-content {
+            padding: 2rem;
+        }
+        
+        .alert-box {
+            background: #FEF2F2;
+            border: 1px solid var(--danger-light);
+            border-left: 4px solid var(--danger);
+            border-radius: var(--border-radius-sm);
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-box p {
+            color: #7F1D1D;
+            font-weight: 500;
+        }
+        
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+        
+        .data-list {
+            background: var(--light-gray);
+            border-radius: var(--border-radius-sm);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .data-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-light);
+            color: var(--gray);
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        
+        .data-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--danger-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--danger);
+            font-size: 0.875rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .confirmation-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1rem 1.25rem;
+            background: #FEF2F2;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--danger-light);
+        }
+        
+        .confirmation-check input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 0.25rem;
+            cursor: pointer;
+            accent-color: var(--danger);
+            flex-shrink: 0;
+        }
+        
+        .confirmation-check label {
+            color: #7F1D1D;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            transition: var(--transition-fast);
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--gray);
+            border: 2px solid var(--gray-light);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--light-gray);
+            border-color: var(--gray);
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-danger:hover:not(:disabled) {
+            background: var(--danger-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .btn-danger:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .warning-card {
+                margin: 1rem;
+            }
+            
+            .warning-content {
+                padding: 1.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column-reverse;
+                gap: 0.75rem;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 0.875rem 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="warning-card">
+        <div class="warning-header">
+            <div class="warning-icon">⚠️</div>
+            <h1>Delete Account</h1>
+            <p>This action cannot be undone</p>
+        </div>
+        
+        <div class="warning-content">
+            <div class="alert-box">
+                <p>⚠️ <strong>Warning:</strong> You are about to permanently delete your NutriAI account.</p>
+            </div>
+            
+            <h3 class="section-title">What will be deleted:</h3>
+            
+            <div class="data-list">
+                <div class="data-item">
+                    <div class="data-icon">👤</div>
+                    <span>Your personal profile information</span>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-icon">📊</div>
+                    <span>All health and nutrition data</span>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-icon">🍽️</div>
+                    <span>Your meal plans and preferences</span>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-icon">💬</div>
+                    <span>All chat history with NutriAI</span>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-icon">📈</div>
+                    <span>Your progress tracking history</span>
+                </div>
+            </div>
+            
+            <div class="confirmation-check">
+                <input type="checkbox" id="confirmDelete">
+                <label for="confirmDelete">
+                    I understand this action is permanent and cannot be undone
+                </label>
+            </div>
+            
+            <form method="POST" class="deletion-form">
+                {% csrf_token %}
+                <div class="button-group">
+                    <a href="{% url 'profile' %}" class="btn btn-secondary">
+                        ← Cancel
+                    </a>
+                    <button type="submit" id="deleteButton" disabled class="btn btn-danger">
+                        🗑️ Permanently Delete Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmCheckbox = document.getElementById('confirmDelete');
+            const deleteButton = document.getElementById('deleteButton');
+            
+            confirmCheckbox.addEventListener('change', function() {
+                deleteButton.disabled = !this.checked;
+            });
+            
+            // Add confirmation dialog when submitting the form
+            const form = document.querySelector('.deletion-form');
+            form.addEventListener('submit', function(e) {
+                if (!confirm('⚠️ Are you absolutely sure?\n\nThis will permanently delete your account and all associated data. This action cannot be undone.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

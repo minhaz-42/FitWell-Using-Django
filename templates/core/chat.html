@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Nutritionist — NutriAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        /* Enhanced Design System */
+        :root{
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --primary-light: #D1FAE5;
+            --primary-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            --secondary: #EC4899;
+            --accent: #8B5CF6;
+            --light: #F8FAFC;
+            --light-gray: #F1F5F9;
+            --dark: #1E293B;
+            --gray: #64748B;
+            --gray-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --border-radius: 24px;
+            --border-radius-sm: 12px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 25px 60px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-fast: all 0.2s ease;
+        }
+
+        html,body{
+            height:100%;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            margin:0;
+            background: var(--light);
+            color: #0f172a;
+            -webkit-font-smoothing:antialiased;
+        }
+
+        /* Layout helpers */
+        .sidebar{ 
+            width: 300px; 
+            transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 40;
+            background: var(--light);
+            box-shadow: var(--shadow);
+        }
+        .main-content{ 
+            margin-left: 300px; 
+            transition: margin .3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: calc(100% - 300px);
+        }
+
+        @media (max-width: 768px){
+            .sidebar{ 
+                transform: translateX(-100%);
+            }
+            .sidebar.open{ 
+                transform: translateX(0);
+                box-shadow: var(--shadow-lg);
+            }
+            .main-content{ 
+                margin-left: 0;
+                width: 100%;
+            }
+            #mobileMenuBtn{ 
+                display: block !important;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar{ background:var(--light); height:100vh; border-right:1px solid var(--gray-light); }
+        .gradient-bg{ background: var(--primary-gradient); }
+
+        /* Conversations */
+        .conversation-item{ 
+            transition: all .2s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-left:4px solid transparent; 
+            border-radius: var(--border-radius-sm);
+        }
+        .conversation-item:hover{ 
+            background: var(--primary-light); 
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .conversation-item.active{ 
+            background:var(--primary-light); 
+            border-left-color:var(--primary);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.1);
+        }
+
+        /* Chat area */
+        .chat-container{ background: transparent; }
+
+        /* Message bubbles */
+        .message-bubble-user{
+            background: var(--primary);
+            color: white;
+            border-radius: 20px 20px 6px 20px;
+            box-shadow: 0 8px 20px rgba(16,185,129,0.15);
+            word-break: break-word;
+            position: relative;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .message-bubble-user:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16,185,129,0.2);
+        }
+
+        .message-bubble-bot{
+            background: white;
+            color: #0f172a;
+            border:1px solid var(--gray-light);
+            border-radius: 20px 20px 20px 6px;
+            box-shadow: 0 8px 20px rgba(2,6,23,0.06);
+            word-break: break-word;
+            position: relative;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .message-bubble-bot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(2,6,23,0.08);
+        }
+
+        /* Typing indicator */
+        .typing-dots{ display:inline-flex; gap:6px; }
+        .typing-dots span{ width:8px; height:8px; background:var(--gray); border-radius:50%; animation:typing 1.2s infinite ease-in-out; }
+        .typing-dots span:nth-child(1){ animation-delay:-.24s; } 
+        .typing-dots span:nth-child(2){ animation-delay:-.12s; }
+        @keyframes typing{ 0%,80%,100%{ transform:scale(0); opacity:0.5;} 40%{ transform:scale(1); opacity:1;} }
+
+        /* Buttons */
+        .btn-primary{ 
+            background: var(--primary); 
+            color:white; 
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+            transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-primary:hover{ 
+            filter:brightness(1.05); 
+            transform:translateY(-2px); 
+            box-shadow: 0 6px 16px rgba(16,185,129,0.4);
+        }
+        .btn-primary:active{ 
+            transform:translateY(0); 
+            box-shadow: 0 2px 8px rgba(16,185,129,0.3);
+        }
+
+        /* Suggestions */
+        .suggestion-chip{ 
+            background: rgba(16,185,129,0.08); 
+            border:1px solid rgba(16,185,129,0.15); 
+            color:var(--primary);
+            transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(16,185,129,0.05);
+        }
+        .suggestion-chip:hover{ 
+            transform:translateY(-3px); 
+            box-shadow: 0 8px 20px rgba(16,185,129,0.12);
+            background: rgba(16,185,129,0.12);
+        }
+
+        /* Language switcher */
+        .lang-switch{ 
+            display:flex; 
+            gap:4px; 
+            align-items:center; 
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(10px);
+            border-radius:9999px; 
+            padding: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .lang-switch .language-btn{
+            flex:1 1 0;
+            padding:10px 14px;
+            border-radius:9999px;
+            background:transparent;
+            border:1px solid transparent;
+            color:var(--gray);
+            font-weight:600;
+            text-align:center;
+            cursor:pointer;
+            transition: all .2s ease;
+        }
+        .lang-switch .language-btn:hover{ 
+            color:var(--primary); 
+            background: rgba(16,185,129,0.05);
+        }
+        .lang-switch .language-btn.active{
+            background:var(--primary);
+            color:#fff;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.2);
+        }
+
+        /* Input */
+        .input-container{ 
+            background:white; 
+            border-radius:var(--border-radius); 
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        textarea#messageInput{ 
+            background:transparent; 
+            transition: all .2s ease;
+        }
+        textarea#messageInput:focus {
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+        }
+
+        /* small helpers */
+        .scrollbar-hide{ -ms-overflow-style:none; scrollbar-width:none; }
+        .scrollbar-hide::-webkit-scrollbar{ display:none; }
+
+        /* subtle fade-in for messages */
+        .fade-in{ animation:fadeIn .3s ease both; }
+        @keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
+
+        /* Toasts */
+        #toastContainer > div{ transition: transform .3s ease, opacity .3s ease; }
+
+        /* Accessibility and responsive tweaks */
+        button:focus{ outline:none; }
+        button:focus-visible, textarea:focus-visible { 
+            box-shadow: 0 0 0 4px rgba(16,185,129,0.2); 
+            border-radius:12px; 
+        }
+
+        /* Improve touch targets */
+        .tts-btn, .stt-btn, #sendButton { min-width:40px; min-height:40px; }
+
+        /* Responsive message widths */
+        .message-bubble-user, .message-bubble-bot{ max-width:75%; }
+        @media (max-width: 768px){
+            .message-bubble-user, .message-bubble-bot{ max-width:90%; }
+            .conversation-item{ padding:14px; }
+            .w-10{ width:40px; height:40px; }
+            .input-container .w-12{ width:48px; height:48px; }
+            #sendButton{ right:8px; }
+            /* Reset margin and width for input area on mobile */
+            .border-t.border-gray-200.bg-white.py-4.shadow-lg.fixed.bottom-0 {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            /* Ensure mobile menu button is visible */
+            #mobileMenuBtn {
+                display: block;
+                z-index: 1000;
+            }
+            /* Ensure sidebar is above other content when open */
+            .sidebar {
+                z-index: 999;
+            }
+            /* Remove margin from main content on mobile */
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+        }
+
+        /* Suggestion hover subtle */
+        .suggestion-chip:hover{ transform:translateY(-2px); box-shadow: 0 6px 16px rgba(16,185,129,0.08); }
+
+        /* Message pop animation for new messages */
+        .msg-pop{ animation:msgPop .35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+        @keyframes msgPop{ 
+            0%{ transform:translateY(12px) scale(.96); opacity:0 } 
+            70%{ transform:translateY(-4px) scale(1.02); opacity:1 } 
+            100%{ transform:none; } 
+        }
+
+        /* Send button micro-interactions */
+        #sendButton{
+            background: var(--primary-gradient);
+            color: #fff;
+            border: none;
+            border-radius: 9999px; /* pill */
+            padding: 8px 12px;
+            min-width: 44px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: transform .14s cubic-bezier(.2,.8,.2,1), box-shadow .14s ease, background .14s ease;
+            box-shadow: 0 6px 18px rgba(2,6,23,0.08);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        #sendButton:hover{
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(2,6,23,0.12);
+            background: linear-gradient(180deg, var(--primary-dark), var(--primary));
+        }
+        #sendButton:active{
+            transform: translateY(0) scale(.995);
+            box-shadow: 0 4px 10px rgba(2,6,23,0.08);
+        }
+        #sendButton:focus{
+            outline: none;
+            box-shadow: 0 0 0 5px rgba(16,185,129,0.12);
+        }
+        /* paper-plane icon sizing */
+        #sendButton i{ font-size: 14px; }
+
+        /* Enhanced header styling */
+        header {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Profile dropdown enhancements */
+        #profileDropdown {
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Loading indicator enhancements */
+        #loadingIndicator, #recordingIndicator {
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.8);
+        }
+
+        /* Model selector styling */
+        #modelSelect {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all .2s ease;
+        }
+        #modelSelect:focus {
+            box-shadow: 0 0 0 2px rgba(16,185,129,0.2);
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Checkbox styling */
+        input[type="checkbox"] {
+            accent-color: var(--primary);
+        }
+
+        /* KBD styling */
+        kbd {
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Avatar pulse for new messages */
+        .avatar-pulse {
+            animation: avatarPulse 2s infinite;
+        }
+
+        @keyframes avatarPulse {
+            0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+            100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+        }
+
+        /* Nutrition-specific styles */
+        .report-card {
+            background: white;
+            border-radius: var(--border-radius-sm);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .report-card h4 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .report-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--light);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* New improvements */
+        .nutrition-tip {
+            background: var(--primary-light);
+            border-radius: var(--border-radius-sm);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--primary);
+        }
+
+        .nutrition-tip h5 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--gray-light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .food-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+
+        .food-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .food-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .food-details {
+            flex: 1;
+        }
+
+        .food-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .food-macros {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .meal-plan-day {
+            background: white;
+            border-radius: var(--border-radius-sm);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .meal-plan-day h5 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .dark\:bg-gray-900 {
+                background-color: #111827;
+            }
+            .dark\:text-white {
+                color: white;
+            }
+            .dark\:bg-gray-800 {
+                background-color: #1F2937;
+            }
+            .dark\:border-gray-700 {
+                border-color: #374151;
+            }
+        }
+
+        /* Enhanced image preview */
+        .image-preview-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-preview {
+            position: relative;
+            display: inline-block;
+        }
+
+        .image-preview img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid var(--primary-light);
+        }
+
+        .image-remove {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Enhanced suggestions */
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .suggestion-card {
+            background: white;
+            border-radius: var(--border-radius-sm);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid var(--gray-light);
+        }
+
+        .suggestion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+
+        .suggestion-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .suggestion-desc {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Hidden CSRF token for JS fetch requests -->
+    <form id="csrfForm" style="display:none">{% csrf_token %}</form>
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" aria-label="Open menu" class="hidden fixed top-4 left-4 z-50 bg-white p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+        <i class="fas fa-bars text-gray-600"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar bg-white border-r border-gray-200 overflow-y-auto">
+        <!-- Header -->
+        <div class="p-5 border-b border-gray-200 gradient-bg text-white">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center shadow-md">
+                        <i class="fas fa-apple-alt text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 id="chatTitle" class="text-xl font-semibold">NutriAI</h1>
+                        <p class="text-xs opacity-90">Your Nutrition Assistant</p>
+                    </div>
+                </div>
+                <button id="closeSidebar" aria-label="Close menu" class="lg:hidden p-2 rounded-lg hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- New Chat Button -->
+        <div class="p-4 border-b border-gray-200">
+            <button id="newChatBtn" class="w-full btn-primary text-white py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition duration-200 shadow-md hover:shadow-lg">
+                <i class="fas fa-plus"></i>
+                <span id="newChatText">New Chat</span>
+            </button>
+        </div>
+
+        <!-- Conversations List -->
+        <div class="flex-1 overflow-y-auto">
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-500" id="recentChatsText">Recent Chats</h3>
+                    <button id="clearChatsBtn" class="text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200 p-1 rounded">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+
+                <!-- Search -->
+                <div class="mb-3">
+                    <input id="convSearch" type="search" placeholder="Search chats..." class="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200" />
+                </div>
+                <div id="conversationsList" class="space-y-3">
+                    <!-- Conversations will be loaded here -->
+                    <div id="conversationsPlaceholder" class="p-6 text-center text-gray-500 bg-gray-50 rounded-lg border border-gray-100">
+                        <i class="fas fa-comments text-3xl mb-3 opacity-50"></i>
+                        <p class="text-sm">No chats yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="p-4 border-t border-gray-200">
+            <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200" id="profileBtn">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shadow-sm">
+                    <span class="text-sm text-green-600 font-medium"><i class="fas fa-user"></i></span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-800 truncate" id="userName">User</p>
+                    <p class="text-xs text-gray-500 truncate" id="userEmail">user@example.com</p>
+                </div>
+                <i class="fas fa-chevron-down text-gray-400 text-sm transition-transform duration-200" id="profileChevron"></i>
+            </div>
+
+            <!-- Profile Dropdown -->
+            <div id="profileDropdown" class="hidden mt-2 bg-white border border-gray-200 rounded-xl shadow-lg py-2">
+                <button id="profileViewBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 transition-all duration-200 rounded-lg mx-2">
+                    <i class="fas fa-user text-gray-500 w-5"></i>
+                    <span id="profileText">Profile</span>
+                </button>
+                <button id="settingsViewBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 transition-all duration-200 rounded-lg mx-2">
+                    <i class="fas fa-cog text-gray-500 w-5"></i>
+                    <span id="settingsText">Settings</span>
+                </button>
+                <div class="border-t border-gray-100 my-1"></div>
+                <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 flex items-center space-x-2 transition-all duration-200 rounded-lg mx-2">
+                    <i class="fas fa-sign-out-alt w-5"></i>
+                    <span id="logoutText">Logout</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content min-h-screen flex flex-col relative" style="position:relative;">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 py-4 px-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <!-- Back Button -->
+                    <button id="backButton" class="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition duration-200 p-2 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-arrow-left"></i>
+                        <span id="backText">Go Back</span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Language Switcher - Simplified for nutritionist -->
+                    <div class="lang-switch bg-gray-100 rounded-full p-1 flex shadow-inner" role="tablist" aria-label="Language switch">
+                        <button id="langEnChat" class="language-btn active text-sm" role="tab" aria-pressed="true">English</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Chat Area -->
+        <div class="flex-1 overflow-y-auto px-4 py-6 scrollbar-hide" id="chatScrollArea" style="margin-bottom: 112px;">
+            <div class="max-w-4xl mx-auto">
+                <div id="messagesContainer" class="chat-container p-4 space-y-6">
+                    <!-- Welcome Message -->
+                    <div class="flex items-start space-x-4 fade-in">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1 shadow-sm avatar-pulse">
+                            <i class="text-green-600 fas fa-robot"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="message-bubble-bot px-4 py-3">
+                                <p class="text-gray-800" id="welcomeMessage">Hello! I'm your NutriAI assistant. How can I assist you with your nutrition goals today?</p>
+                            </div>
+                            <div class="mt-2 flex items-center space-x-3">
+                                <button class="tts-btn text-green-600 hover:text-green-700 text-sm flex items-center space-x-1 transition p-2 rounded-lg hover:bg-green-50">
+                                    <i class="fas fa-volume-up"></i>
+                                    <span id="listenText">Listen</span>
+                                </button>
+                                <span class="text-xs text-gray-400">•</span>
+                                <button data-action="copy" class="text-gray-500 hover:text-gray-700 text-sm flex items-center space-x-1 transition p-2 rounded-lg hover:bg-gray-100">
+                                    <i class="fas fa-copy"></i>
+                                    <span id="copyText">Copy</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced Quick Suggestions -->
+                    <div id="suggestionsContainer" class="fade-in">
+                        <div class="suggestions-grid">
+                            <div class="suggestion-card" data-message="How do I calculate my BMI and what does it mean?">
+                                <div class="suggestion-icon">
+                                    <i class="fas fa-weight-scale"></i>
+                                </div>
+                                <div class="suggestion-title">Calculate BMI</div>
+                                <div class="suggestion-desc">Understand your body mass index</div>
+                            </div>
+                            <div class="suggestion-card" data-message="What's a healthy calorie intake for my goals?">
+                                <div class="suggestion-icon">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="suggestion-title">Calorie Advice</div>
+                                <div class="suggestion-desc">Personalized calorie recommendations</div>
+                            </div>
+                            <div class="suggestion-card" data-message="Suggest some healthy breakfast ideas">
+                                <div class="suggestion-icon">
+                                    <i class="fas fa-egg"></i>
+                                </div>
+                                <div class="suggestion-title">Breakfast Ideas</div>
+                                <div class="suggestion-desc">Quick & nutritious morning meals</div>
+                            </div>
+                            <div class="suggestion-card" data-message="How much protein do I need daily for muscle building?">
+                                <div class="suggestion-icon">
+                                    <i class="fas fa-dumbbell"></i>
+                                </div>
+                                <div class="suggestion-title">Protein Needs</div>
+                                <div class="suggestion-desc">Optimize your protein intake</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md z-50" style="margin-left:300px; width:calc(100% - 300px);">
+            <div class="max-w-3xl mx-auto p-4 flex flex-col gap-2">
+                
+                <!-- Input Row -->
+                <div class="flex items-end gap-2">
+                    
+                    <!-- Model Selector -->
+                    <select id="modelSelect"
+                        class="text-xs border border-gray-300 rounded-md bg-gray-50 px-2 py-1 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="nutrition">Nutrition Expert</option>
+                        
+                    </select>
+
+                    <!-- Text Input -->
+                    <div class="flex-1 flex flex-col gap-2">
+                        <!-- Image Attachment Preview -->
+                        <div id="imagePreviewContainer" class="image-preview-container hidden">
+                            <!-- Image thumbnails will be inserted here -->
+                        </div>
+
+                        <!-- Input Row -->
+                        <div class="flex items-center gap-2">
+                            <textarea id="messageInput"
+                                placeholder="Ask me anything about nutrition, health, or meal planning... or attach an image"
+                                rows="1"
+                                class="flex-1 rounded-xl border border-gray-300 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm shadow-sm max-h-36 transition-all duration-200"></textarea>
+
+                            <!-- Image Attach Button -->
+                            <input type="file" id="imageInput" accept="image/*" multiple style="display:none" />
+                            <label for="imageInput" title="Attach image (like ChatGPT)" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition cursor-pointer inline-flex items-center justify-center flex-shrink-0" aria-label="Attach image">
+                                <i class="fas fa-image"></i>
+                            </label>
+
+                            <button id="sendButton" aria-label="Send" class="flex-shrink-0 transition">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Status & Shortcuts -->
+                <div class="flex justify-center items-center text-xs text-gray-500 mt-1">
+                    <!-- Keyboard Hints -->
+                    <div class="flex flex-wrap gap-3 justify-center">
+                        <div class="flex items-center gap-1">
+                            <kbd class="px-2 py-1 bg-gray-100 border border-gray-300 rounded">Enter</kbd>
+                            <span>Send</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <kbd class="px-2 py-1 bg-gray-100 border border-gray-300 rounded">Shift</kbd>+
+                            <kbd class="px-2 py-1 bg-gray-100 border border-gray-300 rounded">Enter</kbd>
+                            <span>New Line</span>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-3 rounded-full shadow-lg z-50">
+        <div class="flex items-center space-x-3">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span id="typingText">Analyzing your nutrition query...</span>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+    // Language data for chat
+    const chatTranslations = {
+        'en': {
+            'newChatText': 'New Chat',
+            'recentChatsText': 'Recent Chats',
+            'homeText': 'Home',
+            'chatTitle': 'NutriAI',
+            'currentChatTitle': 'New Chat',
+            'welcomeMessage': 'Hello! I\'m your NutriAI assistant. How can I assist you with your nutrition goals today?',
+            'listenText': 'Listen',
+            'copyText': 'Copy',
+            'typingText': 'Analyzing your nutrition query...',
+            'recordingText': 'Recording...',
+            'inputPlaceholder': 'Ask me anything about nutrition, health, or meal planning...',
+            'sendHintText': 'Send message',
+            'newLineHintText': 'New line',
+            'ttsStatusText': 'TTS Active',
+            'sttStatusText': 'STT Active',
+            'voiceInstructions': 'Recording: Hold button to speak, release to stop',
+            'ttsEnabled': 'TTS Enabled',
+            'ttsDisabled': 'TTS Disabled',
+            'sttEnabled': 'STT Enabled',
+            'sttDisabled': 'STT Disabled',
+            'profileText': 'Profile',
+            'settingsText': 'Settings',
+            'logoutText': 'Logout',
+            'backText': 'Go Back'
+        }
+    };
+
+    // DOM elements
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const closeSidebar = document.getElementById('closeSidebar');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileChevron = document.getElementById('profileChevron');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const messagesContainer = document.getElementById('messagesContainer');
+    const chatScrollArea = document.getElementById('chatScrollArea');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const suggestionsContainer = document.getElementById('suggestionsContainer');
+    const newChatBtn = document.getElementById('newChatBtn');
+    const conversationsList = document.getElementById('conversationsList');
+    const conversationsPlaceholder = document.getElementById('conversationsPlaceholder');
+    const clearChatsBtn = document.getElementById('clearChatsBtn');
+    const toastContainer = document.getElementById('toastContainer');
+    const modelSelect = document.getElementById('modelSelect');
+    const backButton = document.getElementById('backButton');
+
+    // State tracking
+    let currentConversationId = null;
+
+    // Current language
+    let currentLang = 'en';
+
+    // Toggle sidebar on mobile
+    mobileMenuBtn.addEventListener('click', () => {
+        sidebar.classList.add('open');
+    });
+
+    closeSidebar.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+    });
+
+    // Toggle profile dropdown
+    profileBtn.addEventListener('click', () => {
+        profileDropdown.classList.toggle('hidden');
+        profileChevron.classList.toggle('rotate-180');
+    });
+
+    // Close profile dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+            profileDropdown.classList.add('hidden');
+            profileChevron.classList.remove('rotate-180');
+        }
+    });
+
+    // Auto-resize textarea
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Focus input on load
+    messageInput.focus();
+
+    // Add Enter key support (Shift+Enter for new line)
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // Send button click handler
+    sendButton.addEventListener('click', sendMessage);
+
+    // Suggestion cards click handler
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.suggestion-card')) {
+            const card = e.target.closest('.suggestion-card');
+            const message = card.getAttribute('data-message');
+            messageInput.value = message;
+            messageInput.focus();
+            messageInput.dispatchEvent(new Event('input'));
+            
+            // Auto-submit for report analysis
+            if (message.includes("Analyze")) {
+                setTimeout(() => {
+                    sendMessage();
+                }, 500);
+            }
+        }
+    });
+
+    // New chat button handler
+    newChatBtn.addEventListener('click', () => {
+        // Clear current chat
+        messagesContainer.innerHTML = '';
+        currentConversationId = null;
+        
+        // Add welcome message back
+        addWelcomeMessage();
+        
+        // Scroll to top
+        chatScrollArea.scrollTop = 0;
+        
+        // Show suggestions again
+        if (suggestionsContainer) {
+            suggestionsContainer.style.display = 'grid';
+        }
+        
+        // Update sidebar - remove active state
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Show toast
+        showToast('New chat started', 'success');
+        
+        // Close sidebar on mobile
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+        }
+    });
+
+    // Clear chats button handler
+    clearChatsBtn.addEventListener('click', async () => {
+        // Show confirmation
+        if (!confirm('Are you sure you want to delete all conversations? This cannot be undone.')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/conversations/clear/', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Clear UI
+                conversationsList.innerHTML = '';
+                conversationsList.appendChild(conversationsPlaceholder);
+                messagesContainer.innerHTML = '';
+                currentConversationId = null;
+                addWelcomeMessage();
+                
+                // Show toast with count
+                showToast(`Deleted ${data.deleted_count} conversation(s)`, 'success');
+            } else {
+                showToast('Failed to clear conversations', 'error');
+            }
+        } catch (err) {
+            console.error('Error clearing conversations:', err);
+            showToast('Error clearing conversations', 'error');
+        }
+    });
+
+    // Back button handler
+    backButton.addEventListener('click', () => {
+        window.history.back();
+    });
+
+    // Profile view button handler
+    const profileViewBtn = document.getElementById('profileViewBtn');
+    if (profileViewBtn) {
+        profileViewBtn.addEventListener('click', () => {
+            window.location.href = '/profile/';
+        });
+    }
+
+    // Settings view button handler
+    const settingsViewBtn = document.getElementById('settingsViewBtn');
+    if (settingsViewBtn) {
+        settingsViewBtn.addEventListener('click', () => {
+            window.location.href = '/profile/';
+        });
+    }
+
+    // Logout button handler
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    const response = await fetch('/logout/', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                        }
+                    });
+                    
+                    if (response.ok || response.status === 302) {
+                        window.location.href = '/login/';
+                    }
+                } catch (err) {
+                    console.error('Logout failed:', err);
+                    window.location.href = '/login/';
+                }
+            }
+        });
+    }
+
+    // Model selector change handler
+    modelSelect.addEventListener('change', () => {
+        const model = modelSelect.value;
+        showToast(`Switched to ${modelSelect.options[modelSelect.selectedIndex].text}`, 'info');
+    });
+
+    // Global variable to store attached images (ChatGPT-style)
+    let attachedImages = [];
+
+    // Function to send message (calls backend /api/v1/chat)
+    async function sendMessage() {
+        const msg = messageInput.value.trim();
+        const hasImages = attachedImages && attachedImages.length > 0;
+
+        if (!msg && !hasImages) return;
+
+        // Add user message with images
+        addMessage(msg || '(Image)', 'user', false, attachedImages);
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        sendButton.disabled = true;
+
+        // Clear images from UI and array
+        if (imagePreviewContainer) {
+            imagePreviewContainer.classList.add('hidden');
+            imagePreviewContainer.innerHTML = '';
+        }
+        const imagesToSend = [...attachedImages];
+        attachedImages = [];
+
+        // Show typing indicator
+        loadingIndicator.classList.remove('hidden');
+        chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
+
+        // Hide suggestions after first user message
+        if (suggestionsContainer) {
+            suggestionsContainer.style.display = 'none';
+        }
+
+        // Build message with image context
+        let messageContent = msg;
+        if (imagesToSend.length > 0) {
+            messageContent = `${msg}\n\n[User attached ${imagesToSend.length} image(s)]`;
+        }
+
+        // Prepare payload (include attached images as base64 data URLs)
+        const payload = {
+            message: messageContent,
+            model: modelSelect ? modelSelect.value : 'nutrition',
+            language: currentLang || 'en',
+            bmi_category: null,
+            images: imagesToSend && imagesToSend.length > 0 ? imagesToSend.map(i => (i.url || i.base64 || i)) : []
+        };
+
+        try {
+            // include conversation id when available so messages stay in one conversation
+            if (currentConversationId) payload.conversation_id = currentConversationId;
+
+            const resp = await fetch('/api/v1/chat', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!resp.ok) {
+                // Fallback to local stub if API fails
+                const aiResponse = generateAIResponse(messageContent);
+                const isReport = messageContent.toLowerCase().includes('analyze');
+                addMessage(aiResponse, 'bot', isReport);
+                showToast('AI service unavailable — using local fallback', 'warning');
+            } else {
+                const data = await resp.json();
+
+                // Ensure we keep using the same conversation for subsequent messages
+                if (data && data.conversation_id) {
+                    currentConversationId = data.conversation_id;
+
+                    // Mark the conversation active in the sidebar if present
+                    try {
+                        document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
+                        const activeItem = document.querySelector(`[data-conversation-id="${currentConversationId}"]`);
+                        if (activeItem) {
+                            activeItem.classList.add('active');
+                            // Update title and timestamp in the sidebar item if returned by API
+                            const titleEl = activeItem.querySelector('.conv-title');
+                            if (titleEl && data.conversation_title) titleEl.textContent = data.conversation_title;
+                            const tsEl = activeItem.querySelector('.conv-ts');
+                            if (tsEl && data.conversation_updated_at) tsEl.textContent = formatTimeAgo(data.conversation_updated_at);
+                            // clear unread badge for this active conversation
+                            const badge = activeItem.querySelector('.ml-2.inline-flex');
+                            if (badge) badge.remove();
+                        }
+                    } catch (e) {
+                        console.warn('Could not update sidebar active state', e);
+                    }
+
+                    // Refresh conversation list so ordering / pinned state updates
+                    setTimeout(() => loadConversations(), 200);
+                }
+
+                const aiText = data && data.response ? data.response : null;
+                if (aiText) {
+                    const isReport = messageContent.toLowerCase().includes('analyze');
+                    addMessage(aiText, 'bot', isReport);
+                } else {
+                    const aiResponse = generateAIResponse(messageContent);
+                    addMessage(aiResponse, 'bot');
+                }
+            }
+        } catch (err) {
+            console.error('Chat request failed', err);
+            const aiResponse = generateAIResponse(messageContent);
+            addMessage(aiResponse, 'bot');
+            showToast('Network error — using local fallback', 'error');
+        } finally {
+            loadingIndicator.classList.add('hidden');
+            sendButton.disabled = false;
+            chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
+            
+            // Reload conversations to show the new/updated conversation in sidebar
+            if (!currentConversationId) {
+                // For new chats, reload after a brief delay to allow backend to process
+                setTimeout(() => {
+                    loadConversations();
+                }, 500);
+            }
+        }
+    }
+
+    // Function to add message to chat (supports images for ChatGPT-style interface)
+    function addMessage(text, sender, isReport = false, images = null) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex items-start ${sender === 'user' ? 'flex-row-reverse' : ''} space-x-4 fade-in msg-pop`;
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = `w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1 shadow-sm ${sender === 'user' ? 'bg-blue-100 ml-4' : 'bg-green-100 mr-4'}`;
+        
+        const avatarIcon = document.createElement('i');
+        avatarIcon.className = sender === 'user' ? 'fas fa-user text-blue-600' : 'fas fa-robot text-green-600';
+        avatarDiv.appendChild(avatarIcon);
+        
+        const messageContentDiv = document.createElement('div');
+        messageContentDiv.className = sender === 'user' ? 'flex-1 flex flex-col items-end' : 'flex-1';
+        
+        const messageBubble = document.createElement('div');
+        messageBubble.className = sender === 'user' ? 'message-bubble-user px-4 py-3' : 'message-bubble-bot px-4 py-3';
+        
+        if (isReport) {
+            // Create report card for analysis responses
+            messageBubble.innerHTML = text;
+        } else {
+            messageBubble.innerHTML = `<p class="${sender === 'user' ? 'text-white' : 'text-gray-800'}">${text.replace(/\n/g, '<br>')}</p>`;
+        }
+        
+        // Add images if present (ChatGPT style - inline with message)
+        if (images && images.length > 0 && sender === 'user') {
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'flex flex-wrap gap-2 mt-3';
+            
+            images.forEach(img => {
+                const imgElement = document.createElement('img');
+                const imgSrc = (img && (img.base64 || img.url)) || img;
+                imgElement.src = imgSrc;
+                imgElement.className = 'max-w-xs rounded-lg shadow-md cursor-pointer hover:opacity-90 transition';
+                imgElement.alt = 'Attachment';
+                imgElement.addEventListener('click', () => {
+                    window.open(imgElement.src, '_blank');
+                });
+                imageContainer.appendChild(imgElement);
+            });
+            
+            messageBubble.appendChild(imageContainer);
+        }
+        
+        const messageActions = document.createElement('div');
+        messageActions.className = 'mt-2 flex items-center space-x-3';
+        
+        if (sender === 'bot') {
+            const ttsBtn = document.createElement('button');
+            ttsBtn.className = 'tts-btn text-green-600 hover:text-green-700 text-sm flex items-center space-x-1 transition p-2 rounded-lg hover:bg-green-50';
+            ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i><span>Listen</span>';
+            ttsBtn.addEventListener('click', () => {
+                showToast('Playing message audio', 'info');
+            });
+            
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'text-gray-500 hover:text-gray-700 text-sm flex items-center space-x-1 transition p-2 rounded-lg hover:bg-gray-100';
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i><span>Copy</span>';
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(text);
+                showToast('Message copied to clipboard', 'success');
+            });
+            
+            messageActions.appendChild(ttsBtn);
+            messageActions.appendChild(document.createElement('span')).className = 'text-xs text-gray-400';
+            messageActions.appendChild(copyBtn);
+        }
+        
+        messageContentDiv.appendChild(messageBubble);
+        messageContentDiv.appendChild(messageActions);
+        
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(messageContentDiv);
+        
+        messagesContainer.appendChild(messageDiv);
+        chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
+    }
+
+    // Function to add welcome message
+    function addWelcomeMessage() {
+        const welcomeDiv = document.createElement('div');
+        welcomeDiv.className = 'flex items-start space-x-4 fade-in';
+        
+        welcomeDiv.innerHTML = `
+            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1 shadow-sm avatar-pulse">
+                <i class="text-green-600 fas fa-robot"></i>
+            </div>
+            <div class="flex-1">
+                <div class="message-bubble-bot px-4 py-3">
+                    <p class="text-gray-800">${chatTranslations[currentLang].welcomeMessage}</p>
+                </div>
+                <div class="mt-2 flex items-center space-x-3">
+                    <button class="tts-btn text-green-600 hover:text-green-700 text-sm flex items-center space-x-1 transition p-2 rounded-lg hover:bg-green-50">
+                        <i class="fas fa-volume-up"></i>
+                        <span>${chatTranslations[currentLang].listenText}</span>
+                    </button>
+                    <span class="text-xs text-gray-400">•</span>
+                    <button data-action="copy" class="text-gray-500 hover:text-gray-700 text-sm flex items-center space-x-1 transition p-2 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-copy"></i>
+                        <span>${chatTranslations[currentLang].copyText}</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(welcomeDiv);
+        
+        // Add enhanced suggestions
+        const suggestionsDiv = document.createElement('div');
+        suggestionsDiv.id = 'suggestionsContainer';
+        suggestionsDiv.className = 'fade-in';
+        suggestionsDiv.innerHTML = `
+            <div class="suggestions-grid">
+                <div class="suggestion-card" data-message="How do I calculate my BMI and what does it mean?">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-weight-scale"></i>
+                    </div>
+                    <div class="suggestion-title">Calculate BMI</div>
+                    <div class="suggestion-desc">Understand your body mass index</div>
+                </div>
+                <div class="suggestion-card" data-message="What's a healthy calorie intake for my goals?">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="suggestion-title">Calorie Advice</div>
+                    <div class="suggestion-desc">Personalized calorie recommendations</div>
+                </div>
+                <div class="suggestion-card" data-message="Suggest some healthy breakfast ideas">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-egg"></i>
+                    </div>
+                    <div class="suggestion-title">Breakfast Ideas</div>
+                    <div class="suggestion-desc">Quick & nutritious morning meals</div>
+                </div>
+                <div class="suggestion-card" data-message="How much protein do I need daily for muscle building?">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div class="suggestion-title">Protein Needs</div>
+                    <div class="suggestion-desc">Optimize your protein intake</div>
+                </div>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(suggestionsDiv);
+        
+        // Reattach event listeners to new suggestion cards
+        setTimeout(() => {
+            document.querySelectorAll('.suggestion-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const message = this.getAttribute('data-message');
+                    messageInput.value = message;
+                    messageInput.focus();
+                    messageInput.dispatchEvent(new Event('input'));
+                    
+                    if (message.includes("Analyze")) {
+                        setTimeout(() => {
+                            sendMessage();
+                        }, 500);
+                    }
+                });
+            });
+        }, 100);
+    }
+
+    // Generate sample report analysis
+    function generateReportAnalysis() {
+        return `
+            <div class="report-card">
+                <h4>Your Nutrition Report Analysis</h4>
+                <div class="report-metrics">
+                    <div class="metric">
+                        <div class="metric-value">23.5</div>
+                        <div class="metric-label">BMI</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">2,150</div>
+                        <div class="metric-label">Daily Calories</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">65%</div>
+                        <div class="metric-label">Goal Progress</div>
+                    </div>
+                </div>
+                <p><strong>Key Insights:</strong></p>
+                <ul class="mt-2 space-y-1">
+                    <li>• Your protein intake is optimal for muscle maintenance</li>
+                    <li>• Consider increasing fiber-rich foods for better digestion</li>
+                    <li>• Your hydration levels could be improved</li>
+                    <li>• Weekly activity is good, but strength training would benefit you</li>
+                </ul>
+                <div class="nutrition-tip">
+                    <h5>Nutrition Tip</h5>
+                    <p>Try adding more leafy greens to your meals for increased vitamin K and folate intake.</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Generate meal plan
+    function generateMealPlan() {
+        return `
+            <div class="meal-plan-day">
+                <h5>Sample Healthy Day Plan</h5>
+                <div class="food-item">
+                    <div class="food-icon">
+                        <i class="fas fa-egg"></i>
+                    </div>
+                    <div class="food-details">
+                        <div class="food-name">Breakfast: Veggie Omelette</div>
+                        <div class="food-macros">320 cal • 25g protein • 15g fat • 10g carbs</div>
+                    </div>
+                </div>
+                <div class="food-item">
+                    <div class="food-icon">
+                        <i class="fas fa-apple-alt"></i>
+                    </div>
+                    <div class="food-details">
+                        <div class="food-name">Snack: Apple with Almond Butter</div>
+                        <div class="food-macros">200 cal • 5g protein • 10g fat • 25g carbs</div>
+                    </div>
+                </div>
+                <div class="food-item">
+                    <div class="food-icon">
+                        <i class="fas fa-fish"></i>
+                    </div>
+                    <div class="food-details">
+                        <div class="food-name">Lunch: Grilled Salmon Salad</div>
+                        <div class="food-macros">450 cal • 35g protein • 20g fat • 25g carbs</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Generate AI response based on user input
+    function generateAIResponse(userMessage) {
+        const responses = {
+            "bmi": "BMI (Body Mass Index) is calculated using your weight and height. The formula is: BMI = weight (kg) / height (m)². A healthy BMI ranges from 18.5 to 24.9. Would you like me to calculate your BMI? I'd need your height and weight.",
+            "calorie": "Your daily calorie needs depend on factors like age, gender, weight, height, and activity level. On average, women need 1,800-2,400 calories and men need 2,200-3,000 calories daily. For a personalized calculation, I'd need more details about your profile and goals.",
+            "protein": "The recommended daily protein intake is 0.8 grams per kilogram of body weight for the average person. If you're active or trying to build muscle, aim for 1.2-2.0 grams per kilogram. For a 70kg person, that's 56-140 grams daily. Good sources include lean meats, fish, eggs, dairy, legumes, and tofu.",
+            "breakfast": "Here are some healthy breakfast ideas:<br>- Greek yogurt with berries and nuts (approx. 300 cal)<br>- Oatmeal with banana and peanut butter (approx. 350 cal)<br>- Scrambled eggs with spinach and whole grain toast (approx. 320 cal)<br>- Smoothie with protein powder, spinach, and fruit (approx. 280 cal)<br>- Avocado toast with poached eggs (approx. 380 cal)",
+            "analyze": generateReportAnalysis(),
+            "energy": "For sustained energy throughout the day, focus on:<br>- Complex carbs like oats, sweet potatoes, and whole grains<br>- Lean proteins like chicken, fish, and legumes<br>- Healthy fats from nuts, seeds, and avocado<br>- Iron-rich foods like spinach and lentils<br>- Stay hydrated with water and herbal teas",
+            "meal": generateMealPlan(),
+            "weight": "For healthy weight management, consider:<br>- Creating a modest calorie deficit (300-500 calories below maintenance)<br>- Prioritizing protein to preserve muscle mass<br>- Incorporating strength training 2-3 times per week<br>- Eating plenty of fiber-rich vegetables<br>- Staying consistent rather than pursuing rapid weight loss"
+        };
+        
+        const lowerMessage = userMessage.toLowerCase();
+        
+        if (lowerMessage.includes("bmi")) return responses.bmi;
+        if (lowerMessage.includes("calorie")) return responses.calorie;
+        if (lowerMessage.includes("protein")) return responses.protein;
+        if (lowerMessage.includes("breakfast")) return responses.breakfast;
+        if (lowerMessage.includes("analyze")) return responses.analyze;
+        if (lowerMessage.includes("energy")) return responses.energy;
+        if (lowerMessage.includes("meal") || lowerMessage.includes("plan")) return responses.meal;
+        if (lowerMessage.includes("weight") || lowerMessage.includes("loss") || lowerMessage.includes("gain")) return responses.weight;
+        
+        return "I understand you're asking about nutrition and health. Could you provide more specific details so I can give you the most accurate and helpful information?";
+    }
+
+    // Function to show toast notifications
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-500' : 
+                        type === 'error' ? 'bg-red-500' : 
+                        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
+        
+        toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2`;
+        toast.innerHTML = `
+            <span>${message}</span>
+            <button class="text-white hover:opacity-70 transition-opacity duration-200">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                toastContainer.removeChild(toast);
+            }, 300);
+        }, 3000);
+        
+        // Close button
+        toast.querySelector('button').addEventListener('click', () => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                toastContainer.removeChild(toast);
+            }, 300);
+        });
+    }
+
+    // Initialize the chat
+    // Load conversations from API
+    async function loadConversations() {
+        try {
+            const response = await fetch('/api/conversations/', {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                console.error('Failed to load conversations:', response.statusText);
+                return;
+            }
+
+            const data = await response.json();
+            const conversations = data.conversations || [];
+
+            if (conversationsList && conversationsPlaceholder) {
+                if (conversations.length > 0) {
+                    conversationsList.innerHTML = '';
+
+                    conversations.forEach((conv, index) => {
+                        const convItem = document.createElement('div');
+                        convItem.className = 'conversation-item p-4 cursor-pointer transition-all duration-200 rounded-lg border border-gray-200 hover:border-green-300 flex items-center justify-between' + (index === 0 ? ' active' : '');
+                        convItem.dataset.conversationId = conv.id;
+
+                        // Truncate long titles
+                        const displayTitle = conv.title.length > 40 ? conv.title.substring(0, 40) + '...' : conv.title;
+
+                        const formattedTime = conv.updated_at ? formatTimeAgo(conv.updated_at) : '';
+                        const unreadBadge = conv.unread_count && conv.unread_count > 0 ? `<span class="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">${conv.unread_count}</span>` : '';
+
+                        convItem.innerHTML = `
+                            <div class="conv-main flex items-center space-x-3 flex-1 min-w-0">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shadow-sm">
+                                    <i class="fas fa-message text-green-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0 pl-2">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-sm font-medium text-gray-800 truncate conv-title">${displayTitle}</p>
+                                        ${unreadBadge}
+                                    </div>
+                                    <p class="text-xs text-gray-500 truncate conv-ts">${formattedTime}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 ml-3">
+                                <button class="pin-conv-btn text-yellow-600 hover:text-yellow-800 p-2 rounded" title="Pin conversation" aria-label="Pin conversation" data-conv-id="${conv.id}" data-pinned="${conv.pinned ? '1' : '0'}">
+                                    <i class="fas fa-star ${conv.pinned ? 'text-yellow-500' : 'text-gray-300'}"></i>
+                                </button>
+                                <button class="rename-conv-btn text-gray-500 hover:text-gray-700 p-2 rounded" title="Rename" aria-label="Rename conversation" data-conv-id="${conv.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="delete-conv-btn text-red-500 hover:text-red-700 p-2 rounded" title="Delete conversation" aria-label="Delete conversation" data-conv-id="${conv.id}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        `;
+
+                        // Clicking the main area loads conversation
+                        convItem.querySelector('.conv-main').addEventListener('click', () => loadConversation(conv.id));
+
+                        // Pin button
+                        convItem.querySelector('.pin-conv-btn').addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const id = e.currentTarget.getAttribute('data-conv-id');
+                            const pinnedFlag = e.currentTarget.getAttribute('data-pinned') === '1';
+                            const newPinned = !pinnedFlag;
+                            try {
+                                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                                const resp = await fetch(`/api/conversations/${id}/pin/`, {
+                                    method: 'POST',
+                                    credentials: 'same-origin',
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRFToken': csrfToken,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ pinned: newPinned })
+                                });
+                                if (resp.ok) {
+                                    const res = await resp.json();
+                                    // update button state
+                                    e.currentTarget.setAttribute('data-pinned', res.pinned ? '1' : '0');
+                                    e.currentTarget.querySelector('i').classList.toggle('text-yellow-500', res.pinned);
+                                    // reload conversations to reflect ordering
+                                    setTimeout(() => loadConversations(), 200);
+                                } else {
+                                    showToast('Failed to update pin', 'error');
+                                }
+                            } catch (err) {
+                                console.error('Pin error', err);
+                                showToast('Error updating pin', 'error');
+                            }
+                        });
+
+                        // Rename button
+                        convItem.querySelector('.rename-conv-btn').addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const id = e.currentTarget.getAttribute('data-conv-id');
+                            const currentTitle = conv.title || '';
+                            const newTitle = prompt('Rename conversation', currentTitle);
+                            if (!newTitle || newTitle.trim().length === 0) return;
+                            try {
+                                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                                const resp = await fetch(`/api/conversations/${id}/rename/`, {
+                                    method: 'POST',
+                                    credentials: 'same-origin',
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRFToken': csrfToken,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ title: newTitle.trim() })
+                                });
+                                if (resp.ok) {
+                                    const res = await resp.json();
+                                    showToast('Conversation renamed', 'success');
+                                    // reload conversations
+                                    setTimeout(() => loadConversations(), 150);
+                                } else {
+                                    showToast('Failed to rename conversation', 'error');
+                                }
+                            } catch (err) {
+                                console.error('Rename error', err);
+                                showToast('Error renaming conversation', 'error');
+                            }
+                        });
+
+                        // Delete button
+                        convItem.querySelector('.delete-conv-btn').addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const id = e.currentTarget.getAttribute('data-conv-id');
+                            if (!confirm('Delete this conversation? This cannot be undone.')) return;
+
+                            try {
+                                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                                const resp = await fetch(`/api/conversations/${id}/delete/`, {
+                                    method: 'DELETE',
+                                    credentials: 'same-origin',
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRFToken': csrfToken,
+                                    }
+                                });
+
+                                if (resp.ok) {
+                                    // Remove from DOM
+                                    convItem.remove();
+                                    // If deleted conversation was open, clear chat
+                                    if (currentConversationId === id) {
+                                        messagesContainer.innerHTML = '';
+                                        currentConversationId = null;
+                                        addWelcomeMessage();
+                                    }
+                                    // If list empty, show placeholder
+                                    if (conversationsList.children.length === 0) {
+                                        conversationsList.appendChild(conversationsPlaceholder);
+                                    }
+                                    showToast('Conversation deleted', 'success');
+                                } else {
+                                    const err = await resp.json().catch(() => ({}));
+                                    showToast(err.error || 'Failed to delete conversation', 'error');
+                                }
+                            } catch (err) {
+                                console.error('Delete conv error', err);
+                                showToast('Error deleting conversation', 'error');
+                            }
+                        });
+
+                        conversationsList.appendChild(convItem);
+                    });
+                } else {
+                    conversationsList.innerHTML = '';
+                    conversationsList.appendChild(conversationsPlaceholder);
+                }
+            }
+        } catch (err) {
+            console.error('Error loading conversations:', err);
+        }
+    }
+
+    // Format ISO timestamp to relative time (simple)
+    function formatTimeAgo(iso) {
+        try {
+            const then = new Date(iso);
+            const now = new Date();
+            const s = Math.floor((now - then) / 1000);
+            if (s < 60) return `${s}s`;
+            const m = Math.floor(s / 60);
+            if (m < 60) return `${m}m`;
+            const h = Math.floor(m / 60);
+            if (h < 24) return `${h}h`;
+            const d = Math.floor(h / 24);
+            if (d < 7) return `${d}d`;
+            return then.toLocaleDateString();
+        } catch (e) {
+            return '';
+        }
+    }
+
+    // Search conversations locally
+    const convSearch = document.getElementById('convSearch');
+    if (convSearch) {
+        convSearch.addEventListener('input', function() {
+            const q = this.value.trim().toLowerCase();
+            document.querySelectorAll('#conversationsList .conversation-item').forEach(item => {
+                const title = item.querySelector('p')?.textContent?.toLowerCase() || '';
+                item.style.display = title.includes(q) ? '' : 'none';
+            });
+        });
+    }
+
+    // Load specific conversation
+    async function loadConversation(conversationId) {
+        try {
+            const response = await fetch(`/api/conversations/${conversationId}/`, {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                console.error('Failed to load conversation:', response.statusText);
+                return;
+            }
+            
+            const data = await response.json();
+            const conversation = data.conversation;
+            
+            // Update active state in sidebar
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-conversation-id="${conversationId}"]`)?.classList.add('active');
+            
+            // Clear chat area and load messages
+            messagesContainer.innerHTML = '';
+            currentConversationId = conversationId;
+            
+            conversation.messages.forEach(msg => {
+                addMessage(msg.message, msg.type === 'assistant' ? 'bot' : 'user');
+            });
+            
+            // Scroll to bottom
+            setTimeout(() => {
+                chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
+            }, 100);
+            
+        } catch (err) {
+            console.error('Error loading conversation:', err);
+        }
+    }
+
+    // Load profile data
+    async function loadProfileData() {
+        try {
+            const response = await fetch('/api/profile/', {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                console.error('Failed to load profile:', response.statusText);
+                return;
+            }
+            
+            const data = await response.json();
+            const user = data.user;
+            
+            // Update profile section
+            const userNameElem = document.getElementById('userName');
+            const userEmailElem = document.getElementById('userEmail');
+            
+            if (userNameElem && user.first_name) {
+                userNameElem.textContent = user.first_name || 'User';
+            }
+            if (userEmailElem) {
+                userEmailElem.textContent = user.email || 'user@example.com';
+            }
+            
+        } catch (err) {
+            console.error('Error loading profile:', err);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load profile and conversations on page load
+        loadProfileData();
+        loadConversations();
+        
+        // Show initial toast
+        showToast('Welcome to NutriAI! How can I help with your nutrition today?', 'success');
+
+        // Image attachment handler - ChatGPT style with inline preview
+        console.log('[Image] Initializing image attachment module...');
+        
+        const imageInput = document.getElementById('imageInput');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+
+        console.log('[Image] Elements found:', { 
+            imageInput: !!imageInput, 
+            imagePreviewContainer: !!imagePreviewContainer
+        });
+
+        // Wire file input change handler - ChatGPT style
+        function wireImageInput() {
+            if (!imageInput) {
+                console.error('[Image] imageInput not found');
+                return;
+            }
+            
+            imageInput.onchange = async function(evt) {
+                const files = evt.target.files;
+                if (!files || files.length === 0) {
+                    showToast('No files selected', 'warning');
+                    return;
+                }
+
+                // Build FormData to upload files to server
+                const form = new FormData();
+                for (let file of files) {
+                    if (!file.type.startsWith('image/')) {
+                        showToast('Only image files are supported', 'error');
+                        continue;
+                    }
+                    form.append('files', file);
+                }
+
+                try {
+                    const resp = await fetch('/api/v1/upload-image', {
+                        method: 'POST',
+                        body: form
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok || !data || !data.urls || data.urls.length === 0) {
+                        console.error('[Image] upload failed', data);
+                        showToast('Failed to upload images', 'error');
+                        return;
+                    }
+
+                    // Add returned URLs to attachedImages and show thumbnails
+                    for (let i = 0; i < data.urls.length; i++) {
+                        const url = data.urls[i];
+                        const name = files[i] ? files[i].name : `image-${i+1}`;
+                        const imageData = { name: name, url: url, file: files[i] };
+                        attachedImages.push(imageData);
+
+                        const thumbnail = document.createElement('div');
+                        thumbnail.className = 'image-preview';
+                        thumbnail.innerHTML = `
+                            <img src="${url}" alt="${name}">
+                            <div class="image-remove" data-image-url="${url}" title="Remove image">
+                                <i class="fas fa-times"></i>
+                            </div>
+                        `;
+                        imagePreviewContainer.appendChild(thumbnail);
+                        imagePreviewContainer.classList.remove('hidden');
+
+                        // Wire remove button by URL
+                        thumbnail.querySelector('.image-remove').addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const urlAttr = e.currentTarget.getAttribute('data-image-url');
+                            attachedImages = attachedImages.filter(it => it.url !== urlAttr);
+                            thumbnail.remove();
+                            if (attachedImages.length === 0) {
+                                imagePreviewContainer.classList.add('hidden');
+                            }
+                            showToast('Image removed', 'info');
+                        });
+                    }
+
+                    showToast(`${data.urls.length} image(s) uploaded and attached`, 'success');
+                } catch (err) {
+                    console.error('[Image] upload error', err);
+                    showToast('Image upload failed', 'error');
+                } finally {
+                    imageInput.value = '';
+                }
+            };
+            console.log('[Image] File input change handler wired');
+        }
+
+        // Initialize image handling
+        wireImageInput();
+
+        console.log('[Image] Initialization complete!');
+    });
+    </script>
+</body>
+</html>
