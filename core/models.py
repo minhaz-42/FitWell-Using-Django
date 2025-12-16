@@ -5,10 +5,15 @@ from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import uuid
+import secrets
 
 
 def _generate_uuid_str():
     return str(uuid.uuid4())
+
+def _generate_token():
+    """Generate a secure token for email confirmation"""
+    return secrets.token_urlsafe(32)
 
 class UserProfile(models.Model):
     GENDER_CHOICES = [
@@ -162,6 +167,19 @@ class Message(models.Model):
     def __str__(self):
         message_preview = self.message[:50] + "..." if len(self.message) > 50 else self.message
         return f"{self.message_type}: {message_preview}"
+
+# Keep Conversation.updated_at in sync with latest Message timestamp
+@receiver(post_save, sender=Message)
+def update_conversation_updated_at(sender, instance, created, **kwargs):
+    try:
+        conv = instance.conversation
+        # If this message is newer than the current updated_at, advance it
+        if not conv.updated_at or instance.timestamp > conv.updated_at:
+            conv.updated_at = instance.timestamp
+            conv.save(update_fields=['updated_at'])
+    except Exception:
+        # Avoid breaking message writes due to sync issues
+        pass
 
 class HealthAssessment(models.Model):
     GOAL_CHOICES = [
@@ -445,3 +463,72 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
+
+
+class EmailConfirmation(models.Model):
+    """Model to store email confirmation tokens for new user registrations"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_confirmation')
+    token = models.CharField(max_length=255, unique=True, default=_generate_token)
+    created_at = models.DateTimeField(auto_now_add=True)
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    is_confirmed = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = "Email Confirmation"
+        verbose_name_plural = "Email Confirmations"
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['user']),
+        ]
+    
+    def __str__(self):
+        return f"Email confirmation for {self.user.username}"
+    
+    def is_expired(self):
+        """Check if confirmation token has expired (24 hours)"""
+        if self.is_confirmed:
+            return False
+        expiration_time = self.created_at + timezone.timedelta(hours=24)
+        return timezone.now() > expiration_time
+    
+    def confirm_email(self):
+        """Mark email as confirmed"""
+        self.is_confirmed = True
+        self.confirmed_at = timezone.now()
+        self.user.is_active = True
+        self.user.save()
+        self.save()
+
+
+class EmailLog(models.Model):
+    """Model to log all emails sent to users"""
+    EMAIL_TYPE_CHOICES = [
+        ('confirmation', 'Email Confirmation'),
+        ('welcome', 'Welcome Email'),
+        ('password_reset', 'Password Reset'),
+        ('notification', 'Notification'),
+        ('other', 'Other'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_logs')
+    email_address = models.EmailField()
+    email_type = models.CharField(max_length=50, choices=EMAIL_TYPE_CHOICES, default='other')
+    subject = models.CharField(max_length=255)
+    message_preview = models.TextField(max_length=500, help_text="First 500 chars of message")
+    sent_at = models.DateTimeField(auto_now_add=True)
+    is_sent = models.BooleanField(default=True)
+    error_message = models.TextField(null=True, blank=True, help_text="Error message if sending failed")
+    
+    class Meta:
+        verbose_name = "Email Log"
+        verbose_name_plural = "Email Logs"
+        ordering = ['-sent_at']
+        indexes = [
+            models.Index(fields=['user', '-sent_at']),
+            models.Index(fields=['email_type']),
+            models.Index(fields=['is_sent']),
+        ]
+    
+    def __str__(self):
+        status = "✓ Sent" if self.is_sent else "✗ Failed"
+        return f"{status} - {self.email_type.title()} to {self.email_address} ({self.sent_at.strftime('%Y-%m-%d %H:%M')})"

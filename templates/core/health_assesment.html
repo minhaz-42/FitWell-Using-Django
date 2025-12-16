@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Assessment — NutriAI</title>
+    <title>Body Analysis — FitWell</title>
     <style>
         /* Enhanced Design System */
         :root {
@@ -54,7 +54,7 @@
         
         /* Enhanced Header Styles */
         header {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(30, 41, 59, 0.95);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(226, 232, 240, 0.8);
             position: sticky;
@@ -168,11 +168,11 @@
         
         /* Enhanced Form Styles */
         .assessment-form {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(30, 41, 59, 0.95);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-lg);
             padding: 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(10px);
             position: relative;
             overflow: hidden;
@@ -368,11 +368,11 @@
         
         /* Enhanced Results Section */
         .results-section {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(30, 41, 59, 0.95);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-lg);
             padding: 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(10px);
             display: none;
             position: relative;
@@ -885,6 +885,7 @@
             }
         }
     </style>
+<link rel="stylesheet" href="/static/css/nourish_theme.css">
 </head>
 <body>
     <!-- Floating Background Elements -->
@@ -898,17 +899,17 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <a href="/" class="logo">NutriAI</a>
+                <a href="/" class="logo">FitWell</a>
                 <div class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="{% url 'health' %}" class="active">Health Assessment</a>
-                    <a href="{% url 'chat' %}">AI Nutritionist</a>
-                    <a href="{% url 'profile' %}">Profile</a>
+                    <a href="/">Dashboard</a>
+                    <a href="{% url 'health' %}" class="active">Body Analysis</a>
+                    <a href="{% url 'chat' %}">Ask Coach</a>
+                    <a href="{% url 'profile' %}">My Account</a>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'logout' %}">Logout</a>
+                        <a href="{% url 'logout' %}">Sign Out</a>
                     {% else %}
-                        <a href="{% url 'login' %}">Login</a>
-                        <a href="{% url 'register' %}">Register</a>
+                        <a href="{% url 'login' %}">Sign In</a>
+                        <a href="{% url 'register' %}">Sign Up</a>
                     {% endif %}
                 </div>
             </nav>
@@ -919,7 +920,7 @@
     <main class="main-content">
         <div class="container">
             <div class="page-header">
-                <h1>Health Assessment</h1>
+                <h1>Body Analysis</h1>
                 <p>Complete all the questions below to get your personalized health assessment and nutrition recommendations.</p>
             </div>
             
@@ -1347,7 +1348,7 @@
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `NutriAI_MealPlan_${new Date().toISOString().slice(0,10)}.pdf`;
+                    link.download = `FitWell_MealPlan_${new Date().toISOString().slice(0,10)}.pdf`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);

@@ -4,8 +4,10 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.utils.decorators import method_decorator
+from django import forms
+from django.contrib.auth.models import User
 import json
 from django.db import transaction
 from django.utils import timezone
@@ -23,31 +25,140 @@ from .utils import (
 )
 from .tracking_utils import log_usage, update_user_stats
 
+
+# ============================================
+# CUSTOM REGISTRATION FORM WITH EMAIL
+# ============================================
+class CustomUserCreationForm(UserCreationForm):
+    """Custom registration form with email field"""
+    email = forms.EmailField(
+        required=True,
+        label='Email Address',
+        help_text='',
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'your@email.com',
+            'class': 'form-input',
+        })
+    )
+    
+    username = forms.CharField(
+        max_length=150,
+        label='Username',
+        help_text='',
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Choose a username',
+            'class': 'form-input',
+        })
+    )
+    
+    password1 = forms.CharField(
+        label='Password',
+        help_text='',
+        widget=forms.PasswordInput(attrs={
+            'placeholder': 'Enter password',
+            'class': 'form-input',
+        })
+    )
+    
+    password2 = forms.CharField(
+        label='Confirm Password',
+        help_text='',
+        widget=forms.PasswordInput(attrs={
+            'placeholder': 'Confirm password',
+            'class': 'form-input',
+        })
+    )
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+    
+    def clean_email(self):
+        """Validate email is unique"""
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('This email is already registered.')
+        return email
+    
+    def clean_password2(self):
+        """Validate passwords match and meet requirements"""
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError('Passwords do not match.')
+            if len(password1) < 8:
+                raise forms.ValidationError('Password must be at least 8 characters long.')
+        
+        return password2
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+        return user
+
+
+# ============================================
+# VIEWS
+# ============================================
+
 def home(request):
     """Home page view"""
     return render(request, 'core/home.html')
 
+@csrf_protect
 def register_view(request):
-    """User registration view"""
+    """User registration view
+
+    Users are created as active and a welcome email is sent immediately.
+    """
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            # Log the user in - profile will be created by signal
-            login(request, user)
-            messages.success(request, 'Registration successful!')
-            return redirect('home')
+            user = form.save(commit=False)
+            # Activate user immediately for local development
+            user.is_active = True
+            user.save()
+
+            # Send welcome/thank you email
+            from .email_utils import send_welcome_email
+            try:
+                sent = send_welcome_email(user)
+                if sent:
+                    print(f"\n✓ Welcome email sent to: {user.email}")
+                else:
+                    print(f"Warning: welcome email not sent for: {user.email}")
+            except Exception as e:
+                print(f"Error sending welcome email: {e}")
+
+            messages.success(
+                request,
+                'Registration successful! Your account has been created. You can now log in.'
+            )
+
+            return redirect('login')
     else:
-        form = UserCreationForm()
-    
+        form = CustomUserCreationForm()
+
     return render(request, 'core/register.html', {'form': form})
 
 def login_view(request):
     """User login view"""
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is None:
+            # Standard authentication error
+            messages.error(request, 'Invalid username or password.')
+            form = AuthenticationForm()
+        else:
+            # User authenticated successfully
             login(request, user)
             # Track login
             try:
@@ -56,11 +167,6 @@ def login_view(request):
                 print(f"Error logging usage: {e}")
             messages.success(request, f'Welcome back, {user.username}!')
             return redirect('home')
-        else:
-            # Form has errors, display them
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
     else:
         form = AuthenticationForm()
     
@@ -73,6 +179,96 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('home')
+
+def confirm_email(request, token):
+    """Confirm user email via token link"""
+    from .models import EmailConfirmation
+    from .email_utils import send_welcome_email
+    
+    try:
+        email_confirmation = EmailConfirmation.objects.get(token=token)
+        
+        # Check if already confirmed
+        if email_confirmation.is_confirmed:
+            messages.info(request, 'This email has already been confirmed. You can now log in.')
+            return redirect('login')
+        
+        # Check if token has expired
+        if email_confirmation.is_expired():
+            messages.error(
+                request,
+                'This confirmation link has expired. Please register again or contact support.'
+            )
+            return redirect('register')
+        
+        # Confirm the email
+        email_confirmation.confirm_email()
+        
+        # Send welcome email
+        send_welcome_email(email_confirmation.user)
+        
+        messages.success(
+            request,
+            'Email confirmed successfully! You can now log in to your account.'
+        )
+        return redirect('login')
+        
+    except EmailConfirmation.DoesNotExist:
+        messages.error(request, 'Invalid confirmation link. Please try again or contact support.')
+        return redirect('register')
+    except Exception as e:
+        messages.error(request, f'An error occurred: {str(e)}')
+        return redirect('home')
+
+def resend_confirmation_email(request):
+    """Resend confirmation email to user"""
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        
+        if not email:
+            messages.error(request, 'Please provide your email address.')
+            return render(request, 'core/resend_confirmation.html')
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            # Check if user is already active
+            if user.is_active:
+                messages.info(request, 'Your account is already activated. You can log in now.')
+                return redirect('login')
+            
+            # Check if confirmation email already exists
+            from .models import EmailConfirmation
+            email_conf = EmailConfirmation.objects.filter(user=user).first()
+            
+            if email_conf and not email_conf.is_expired():
+                # Delete old confirmation and create new one
+                email_conf.delete()
+            
+            # Send new confirmation email
+            from .email_utils import send_confirmation_email
+            sent = send_confirmation_email(user, request)
+            
+            if sent:
+                messages.success(
+                    request,
+                    'Confirmation email has been resent. Please check your email to verify your account.'
+                )
+                return redirect('login')
+            else:
+                messages.error(request, 'Failed to send confirmation email. Please try again later.')
+        
+        except User.DoesNotExist:
+            # Don't reveal if email exists or not (security best practice)
+            messages.success(
+                request,
+                'If an account with that email exists and is not yet confirmed, a confirmation email has been sent.'
+            )
+            return redirect('login')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+    
+    return render(request, 'core/resend_confirmation.html')
 
 def health_assessment(request):
     """Health assessment and BMI calculation view"""
@@ -344,6 +540,11 @@ def chat_assistant(request):
     """AI chat assistant view"""
     return render(request, 'core/chat.html')
 
+@login_required
+def features(request):
+    """Features page view - shows Favorite Meals, Articles, and Progress Tracking"""
+    return render(request, 'core/features.html')
+
 @csrf_exempt
 @login_required
 def chat_api(request):
@@ -443,7 +644,7 @@ def generate_nutrition_response(user_message, model, user):
     
     # General nutrition responses
     if any(word in user_message_lower for word in ['hello', 'hi', 'hey']):
-        return "Hello! I'm your NutriAI assistant. I can help with nutrition advice, BMI calculations, meal planning, and health tips!"
+        return "Hello! I'm your FitWell assistant. I can help with nutrition advice, BMI calculations, meal planning, and health tips!"
     
     elif any(word in user_message_lower for word in ['thank', 'thanks']):
         return "You're welcome! Feel free to ask more nutrition questions anytime."
@@ -462,7 +663,10 @@ def generate_nutrition_response(user_message, model, user):
 
 @login_required
 def conversation_list_api(request):
-    """API to get user's conversation list"""
+    """API to get user's conversation list, sorted by most recent message first"""
+    from django.db.models import Max
+    from django.db.models.functions import Coalesce
+
     # Support pagination parameters
     try:
         limit = int(request.GET.get('limit', 50))
@@ -470,14 +674,24 @@ def conversation_list_api(request):
     except ValueError:
         return JsonResponse({'error': 'Invalid pagination parameters'}, status=400)
 
-    # Order by pinned first then most recently updated
-    conversations_qs = Conversation.objects.filter(user=request.user).order_by('-pinned', '-updated_at')
-    total = conversations_qs.count()
-    conversations = conversations_qs[offset:offset+limit]
+    # DB-side ordering: pinned desc, then last message timestamp desc (fallback to updated_at)
+    qs = (
+        Conversation.objects.filter(user=request.user)
+        .annotate(last_msg_ts=Max('messages__timestamp'))
+        .annotate(sort_ts=Coalesce('last_msg_ts', 'updated_at'))
+        .order_by('-pinned', '-sort_ts')
+        .select_related('user')
+    )
+
+    total = qs.count()
+    conversations = list(qs[offset:offset + limit])
 
     conversation_data = []
     for conv in conversations:
+        # Get last message for preview and exact timestamp
         last_message = conv.messages.order_by('-timestamp').first()
+        most_recent_timestamp = getattr(conv, 'sort_ts', None) or (last_message.timestamp if last_message else conv.updated_at)
+
         # compute unread count (messages after last_read_at)
         if conv.last_read_at:
             unread_count = conv.messages.filter(timestamp__gt=conv.last_read_at).count()
@@ -485,7 +699,7 @@ def conversation_list_api(request):
             unread_count = conv.messages.count()
 
         conversation_data.append({
-            'id': conv.id,
+            'id': str(conv.id),
             'title': conv.title,
             'pinned': conv.pinned,
             'unread_count': unread_count,
@@ -493,13 +707,18 @@ def conversation_list_api(request):
             'last_message_type': last_message.message_type if last_message else None,
             'last_message_timestamp': last_message.timestamp.isoformat() if last_message else None,
             'updated_at': conv.updated_at.isoformat(),
-            'message_count': conv.messages.count()
+            'created_at': conv.created_at.isoformat(),
+            'display_timestamp': most_recent_timestamp.isoformat(),
+            'message_count': conv.messages.count(),
+            'sort_timestamp': most_recent_timestamp.timestamp(),
         })
 
     return JsonResponse({'conversations': conversation_data, 'total': total, 'limit': limit, 'offset': offset})
 
 
 @login_required
+@login_required
+@csrf_protect
 def rename_conversation_api(request, conversation_id):
     """API to rename a conversation"""
     if request.method in ('POST', 'PATCH'):
@@ -522,6 +741,7 @@ def rename_conversation_api(request, conversation_id):
 
 
 @login_required
+@csrf_protect
 def pin_conversation_api(request, conversation_id):
     """API to pin/unpin a conversation"""
     if request.method == 'POST':
@@ -579,9 +799,25 @@ def conversation_detail_api(request, conversation_id):
         return JsonResponse({'error': 'Conversation not found'}, status=404)
 
 @login_required
+@csrf_protect
+def mark_conversation_read_api(request, conversation_id):
+    """API to mark a conversation as read"""
+    if request.method == 'POST':
+        try:
+            conversation = Conversation.objects.get(id=conversation_id, user=request.user)
+            conversation.last_read_at = timezone.now()
+            conversation.save()
+            return JsonResponse({'success': True})
+        except Conversation.DoesNotExist:
+            return JsonResponse({'error': 'Conversation not found'}, status=404)
+    
+    return JsonResponse({'error': 'Invalid method'}, status=400)
+
+@login_required
+@csrf_protect
 def delete_conversation_api(request, conversation_id):
     """API to delete a conversation"""
-    if request.method == 'DELETE':
+    if request.method in ('DELETE', 'POST'):
         try:
             conversation = Conversation.objects.get(id=conversation_id, user=request.user)
             conversation.delete()
@@ -592,6 +828,7 @@ def delete_conversation_api(request, conversation_id):
     return JsonResponse({'error': 'Invalid method'}, status=400)
 
 @login_required
+@csrf_protect
 def clear_conversations_api(request):
     """API to clear all conversations"""
     if request.method == 'POST':
@@ -701,26 +938,41 @@ def profile_view(request):
     # Calculate BMI stats
     total_assessments = assessments.count()
     latest_bmi = None
+    latest_bmi_category = None
     bmi_trend = None
     weight_trend = None
+    weight_change = None
+    weight_change_percentage = None
+    bmi_change_percentage = None
     
     if total_assessments > 0:
         latest_bmi = assessments[0].bmi
+        latest_bmi_category = get_bmi_category(latest_bmi)
         bmi_trend = "stable"
         weight_trend = "stable"
         
         if total_assessments > 1:
             previous_bmi = assessments[1].bmi
             previous_weight = assessments[1].weight
+            latest_weight = assessments[0].weight
+            
+            # Calculate weight change
+            weight_change = round(latest_weight - previous_weight, 1)
+            if previous_weight > 0:
+                weight_change_percentage = round(((latest_weight - previous_weight) / previous_weight) * 100, 1)
+            
+            # Calculate BMI change percentage
+            if previous_bmi > 0:
+                bmi_change_percentage = round(((latest_bmi - previous_bmi) / previous_bmi) * 100, 1)
             
             if latest_bmi > previous_bmi:
                 bmi_trend = "increasing"
             elif latest_bmi < previous_bmi:
                 bmi_trend = "decreasing"
             
-            if assessments[0].weight > previous_weight:
+            if latest_weight > previous_weight:
                 weight_trend = "increasing"
-            elif assessments[0].weight < previous_weight:
+            elif latest_weight < previous_weight:
                 weight_trend = "decreasing"
     
     return render(request, 'core/profile.html', {
@@ -728,8 +980,12 @@ def profile_view(request):
         'assessments': assessments,
         'total_assessments': total_assessments,
         'latest_bmi': latest_bmi,
+        'latest_bmi_category': latest_bmi_category,
         'bmi_trend': bmi_trend,
         'weight_trend': weight_trend,
+        'weight_change': weight_change,
+        'weight_change_percentage': weight_change_percentage,
+        'bmi_change_percentage': bmi_change_percentage,
         'total_conversations': total_conversations,
         'total_messages': total_messages
     })
@@ -805,30 +1061,69 @@ def ocr_api(request):
     # Check if user is authenticated
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Please log in to use OCR feature'}, status=401)
-    
+
     if request.method == 'POST':
         # Support multipart form uploads
         image_file = request.FILES.get('image')
         if not image_file:
             return JsonResponse({'error': 'No image file uploaded (use field `image`).'}, status=400)
 
+        # Try to import OCR dependencies and verify Tesseract availability
         try:
-            from PIL import Image
+            from PIL import Image, ImageOps, ImageFilter, ImageEnhance
             import pytesseract
         except Exception as e:
             return JsonResponse({
-                'error': 'OCR dependencies missing. Install Python packages `pillow` and `pytesseract`, and ensure the Tesseract binary is installed on your system.'
+                'error': 'OCR dependencies missing. Install Python packages `pillow` and `pytesseract`, and ensure the Tesseract binary is installed.',
+                'details': str(e)
+            }, status=500)
+
+        # Check if tesseract binary is available and responding
+        try:
+            # This will raise if binary not found or not working
+            _ = pytesseract.get_tesseract_version()
+        except Exception as te:
+            return JsonResponse({
+                'error': 'Tesseract binary not found or not working. Install Tesseract and ensure it is on your PATH (e.g., `brew install tesseract` on macOS).',
+                'details': str(te)
             }, status=500)
 
         try:
             # Open image from uploaded InMemoryUploadedFile
             img = Image.open(image_file)
-            # Optionally convert to RGB for consistency
+
+            # Normalize image mode
             if img.mode != 'RGB':
                 img = img.convert('RGB')
 
-            # Run OCR
-            text = pytesseract.image_to_string(img)
+            # Basic preprocessing to improve OCR accuracy:
+            # - convert to grayscale
+            # - optionally resize if image is small
+            # - sharpen
+            gray = ImageOps.grayscale(img)
+
+            # Resize up to a maximum dimension to help OCR on small images
+            try:
+                width, height = gray.size
+                max_dim = 1600
+                if max(width, height) < max_dim:
+                    scale = max_dim / max(width, height)
+                    new_size = (int(width * scale), int(height * scale))
+                    gray = gray.resize(new_size, Image.LANCZOS)
+            except Exception:
+                # If resizing fails, continue with original
+                pass
+
+            # Sharpen and enhance contrast
+            try:
+                gray = gray.filter(ImageFilter.SHARPEN)
+                enhancer = ImageEnhance.Contrast(gray)
+                gray = enhancer.enhance(1.2)
+            except Exception:
+                pass
+
+            # Run OCR (default language: English). If you need other languages, specify with `lang` param.
+            text = pytesseract.image_to_string(gray)
 
             return JsonResponse({'success': True, 'text': text})
         except Exception as e:
@@ -840,3 +1135,521 @@ def ocr_api(request):
 def test_ocr_button(request):
     """Test page for OCR button functionality"""
     return render(request, 'core/test_ocr.html')
+
+
+# ============ Favorite Meals APIs ============
+@login_required
+def favorite_meals_list_api(request):
+    """Get user's favorite meals"""
+    try:
+        favorites = FavoriteMeal.objects.filter(user=request.user).select_related('meal_suggestion').order_by('-added_date')
+        meal_data = []
+        for fav in favorites:
+            meal_data.append({
+                'id': fav.id,
+                'meal_id': fav.meal_suggestion.id,
+                'name': fav.meal_suggestion.name,
+                'description': fav.meal_suggestion.description,
+                'calories': fav.meal_suggestion.calories,
+                'protein': fav.meal_suggestion.protein,
+                'carbs': fav.meal_suggestion.carbs,
+                'fats': fav.meal_suggestion.fats,
+                'meal_type': fav.meal_suggestion.meal_type,
+                'rating': fav.rating,
+                'notes': fav.notes,
+                'added_date': fav.added_date.isoformat(),
+            })
+        return JsonResponse({'favorites': meal_data, 'total': len(meal_data)})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def favorite_meals_add_api(request):
+    """Add a meal to favorites"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+    try:
+        data = json.loads(request.body or '{}')
+        meal_id = data.get('meal_id')
+        rating = data.get('rating')
+        notes = data.get('notes', '')
+        
+        if not meal_id:
+            return JsonResponse({'error': 'meal_id required'}, status=400)
+        
+        # Convert meal_id to integer
+        try:
+            meal_id = int(meal_id)
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Invalid meal_id format'}, status=400)
+        
+        # Convert rating to integer if provided
+        if rating is not None:
+            try:
+                rating = int(rating)
+                if rating < 1 or rating > 5:
+                    return JsonResponse({'error': 'Rating must be between 1 and 5'}, status=400)
+            except (ValueError, TypeError):
+                rating = None
+        
+        meal = MealSuggestion.objects.get(id=meal_id)
+        fav, created = FavoriteMeal.objects.get_or_create(
+            user=request.user,
+            meal_suggestion=meal,
+            defaults={'rating': rating, 'notes': notes}
+        )
+        
+        if not created:
+            fav.rating = rating
+            fav.notes = notes
+            fav.save()
+        
+        return JsonResponse({'success': True, 'created': created, 'favorite_id': fav.id})
+    except MealSuggestion.DoesNotExist:
+        return JsonResponse({'error': f'Meal not found (ID: {meal_id})'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': f'Error: {str(e)}'}, status=500)
+
+
+@login_required
+def favorite_meals_delete_api(request, favorite_id):
+    """Remove a meal from favorites"""
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+    try:
+        fav = FavoriteMeal.objects.get(id=favorite_id, user=request.user)
+        fav.delete()
+        return JsonResponse({'success': True})
+    except FavoriteMeal.DoesNotExist:
+        return JsonResponse({'error': 'Favorite not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def available_meals_api(request):
+    """Get available meals from user's health assessments or all meals if none exist"""
+    try:
+        # First try to get meals from user's own health assessments
+        meals = MealSuggestion.objects.filter(
+            health_assessment__user=request.user
+        ).values('id', 'name', 'calories', 'protein', 'carbs', 'fats', 'meal_type').distinct().order_by('-id')
+        
+        # If user has no meals from assessments, return all available meals
+        if not meals.exists():
+            meals = MealSuggestion.objects.all().values(
+                'id', 'name', 'calories', 'protein', 'carbs', 'fats', 'meal_type'
+            ).order_by('name')[:50]
+        
+        meal_data = list(meals)
+        
+        return JsonResponse({
+            'meals': meal_data,
+            'total': len(meal_data)
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============ Nutrition Articles APIs ============
+@login_required
+def nutrition_articles_list_api(request):
+    """Get published nutrition articles"""
+    try:
+        from .models import NutritionArticle
+        category = request.GET.get('category')
+        
+        articles_qs = NutritionArticle.objects.filter(is_published=True).order_by('-published_date')
+        if category:
+            articles_qs = articles_qs.filter(category=category)
+        
+        articles = articles_qs[:50]  # Limit to 50
+        article_data = []
+        for article in articles:
+            article_data.append({
+                'id': article.id,
+                'title': article.title,
+                'summary': article.summary or article.content[:200],
+                'category': article.category,
+                'author': article.author or 'FitWell',
+                'published_date': article.published_date.isoformat(),
+                'read_time': article.read_time,
+                'image_url': article.image_url,
+                'slug': article.slug,
+            })
+        
+        categories = [cat[0] for cat in NutritionArticle.CATEGORY_CHOICES]
+        return JsonResponse({
+            'articles': article_data,
+            'total': len(article_data),
+            'categories': categories
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def nutrition_articles_detail_api(request, article_id):
+    """Get full article content"""
+    try:
+        from .models import NutritionArticle
+        article = NutritionArticle.objects.get(id=article_id, is_published=True)
+        
+        return JsonResponse({
+            'id': article.id,
+            'title': article.title,
+            'content': article.content,
+            'summary': article.summary,
+            'category': article.category,
+            'author': article.author or 'FitWell',
+            'published_date': article.published_date.isoformat(),
+            'read_time': article.read_time,
+            'image_url': article.image_url,
+            'slug': article.slug,
+            'keywords': article.keywords,
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============ Progress Tracking APIs ============
+@login_required
+def progress_tracking_list_api(request):
+    """Get user's progress entries"""
+    try:
+        from .models import ProgressTracking
+        entries = ProgressTracking.objects.filter(user=request.user).order_by('-date')[:100]
+        
+        entry_data = []
+        for entry in entries:
+            entry_data.append({
+                'id': entry.id,
+                'date': entry.date.isoformat(),
+                'weight': entry.weight,
+                'bmi': entry.bmi,
+                'calories_consumed': entry.calories_consumed,
+                'calories_burned': entry.calories_burned,
+                'water_intake': entry.water_intake,
+                'steps': entry.steps,
+                'workout_minutes': entry.workout_minutes,
+                'mood_level': entry.mood_level,
+                'energy_level': entry.energy_level,
+                'notes': entry.notes,
+            })
+        
+        return JsonResponse({'entries': entry_data, 'total': len(entry_data)})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def progress_tracking_add_api(request):
+    """Add a progress entry"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+    try:
+        from .models import ProgressTracking
+        from datetime import datetime
+        data = json.loads(request.body or '{}')
+        
+        # Convert date string to date object if it's a string
+        date_value = data.get('date')
+        if isinstance(date_value, str):
+            date_value = datetime.strptime(date_value, '%Y-%m-%d').date()
+        
+        entry, created = ProgressTracking.objects.update_or_create(
+            user=request.user,
+            date=date_value,
+            defaults={
+                'weight': data.get('weight'),
+                'bmi': data.get('bmi'),
+                'calories_consumed': data.get('calories_consumed'),
+                'calories_burned': data.get('calories_burned'),
+                'water_intake': data.get('water_intake'),
+                'steps': data.get('steps'),
+                'workout_minutes': data.get('workout_minutes'),
+                'mood_level': data.get('mood_level'),
+                'energy_level': data.get('energy_level'),
+                'notes': data.get('notes', ''),
+            }
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'created': created,
+            'entry_id': entry.id,
+            'date': entry.date.isoformat() if hasattr(entry.date, 'isoformat') else str(entry.date)
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def progress_tracking_delete_api(request, entry_id):
+    """Delete a progress entry"""
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+    try:
+        from .models import ProgressTracking
+        entry = ProgressTracking.objects.get(id=entry_id, user=request.user)
+        entry.delete()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+# ============ PDF Export APIs ============
+from io import BytesIO
+from django.http import HttpResponse
+
+@login_required
+def export_progress_tracking_pdf(request):
+    """Export progress tracking entries as PDF"""
+    from datetime import datetime, timedelta
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    
+    try:
+        period = request.GET.get('period', 'monthly')  # 'daily', 'weekly' or 'monthly'
+        
+        # Calculate date range
+        today = timezone.now().date()
+        if period == 'daily':
+            start_date = today
+        elif period == 'weekly':
+            start_date = today - timedelta(days=today.weekday())
+        else:  # monthly
+            start_date = today.replace(day=1)
+        
+        # Get entries for the period
+        from .models import ProgressTracking
+        entries = ProgressTracking.objects.filter(
+            user=request.user,
+            date__gte=start_date,
+            date__lte=today
+        ).order_by('date')
+        
+        # Create PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+        
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#10B981'),
+            spaceAfter=6,
+            alignment=1
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=14,
+            textColor=colors.HexColor('#059669'),
+            spaceAfter=12,
+            spaceBefore=12
+        )
+        
+        # Add title
+        period_text = 'Weekly' if period == 'weekly' else 'Monthly'
+        elements.append(Paragraph(f'FitWell Progress Tracking Report - {period_text}', title_style))
+        elements.append(Paragraph(f'Report Period: {start_date} to {today}', styles['Normal']))
+        elements.append(Spacer(1, 0.3 * 72))
+        
+        if not entries.exists():
+            elements.append(Paragraph('No entries for this period.', styles['Normal']))
+        else:
+            # Add statistics
+            avg_weight = sum(e.weight for e in entries if e.weight) / len([e for e in entries if e.weight]) if any(e.weight for e in entries) else 0
+            elements.append(Paragraph('Summary Statistics', heading_style))
+            summary_data = [
+                ['Metric', 'Value'],
+                ['Total Entries', str(entries.count())],
+                ['Average Weight', f'{avg_weight:.1f} kg' if avg_weight else 'N/A'],
+            ]
+            summary_table = Table(summary_data, colWidths=[3 * 72, 3 * 72])
+            summary_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10B981')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            elements.append(summary_table)
+            elements.append(Spacer(1, 0.3 * 72))
+            
+            # Add entries table
+            elements.append(Paragraph('Detailed Entries', heading_style))
+            table_data = [['Date', 'Weight (kg)', 'Notes']]
+            
+            for entry in entries:
+                table_data.append([
+                    str(entry.date),
+                    str(entry.weight) if entry.weight else '-',
+                    (entry.notes[:50] + '...') if entry.notes and len(entry.notes) > 50 else (entry.notes or '-')
+                ])
+            
+            table = Table(table_data, colWidths=[1.5 * 72, 1.5 * 72, 2.5 * 72])
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10B981')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 11),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+                ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+            ]))
+            elements.append(table)
+        
+        # Build PDF
+        doc.build(elements)
+        buffer.seek(0)
+        
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="progress_tracking_{period}_{today}.pdf"'
+        return response
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def export_health_assessment_pdf(request):
+    """Export health assessment as PDF"""
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    
+    try:
+        assessment_id = request.GET.get('id')
+        if not assessment_id:
+            return JsonResponse({'error': 'Assessment ID required'}, status=400)
+        
+        assessment = HealthAssessment.objects.get(id=assessment_id, user=request.user)
+        
+        # Create PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+        
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#10B981'),
+            spaceAfter=6,
+            alignment=1
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=14,
+            textColor=colors.HexColor('#059669'),
+            spaceAfter=12,
+            spaceBefore=12
+        )
+        
+        # Add title
+        elements.append(Paragraph('FitWell Health Assessment Report', title_style))
+        elements.append(Paragraph(f'Assessment Date: {assessment.assessment_date.strftime("%B %d, %Y")}', styles['Normal']))
+        elements.append(Spacer(1, 0.3 * 72))
+        
+        # Personal Information
+        elements.append(Paragraph('Personal Information', heading_style))
+        personal_data = [
+            ['Height', f'{assessment.height} cm'],
+            ['Weight', f'{assessment.weight} kg'],
+            ['Age', str(assessment.age) if assessment.age else 'N/A'],
+            ['Gender', assessment.gender.title() if assessment.gender else 'N/A'],
+            ['Activity Level', assessment.activity_level.replace('_', ' ').title() if assessment.activity_level else 'N/A'],
+            ['Health Goal', assessment.health_goal.replace('_', ' ').title() if assessment.health_goal else 'N/A'],
+        ]
+        personal_table = Table(personal_data, colWidths=[3 * 72, 3 * 72])
+        personal_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#10B981')),
+            ('TEXTCOLOR', (0, 0), (0, -1), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (1, 0), (1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ]))
+        elements.append(personal_table)
+        elements.append(Spacer(1, 0.3 * 72))
+        
+        # Health Metrics
+        elements.append(Paragraph('Health Metrics', heading_style))
+        metrics_data = [
+            ['Metric', 'Value', 'Status'],
+            ['BMI', f'{assessment.bmi:.1f}', assessment.bmi_category],
+            ['BMR', f'{assessment.bmr:.0f} cal/day' if assessment.bmr else 'N/A', 'Basal Metabolic Rate'],
+            ['Maintenance Calories', f'{assessment.maintenance_calories} cal/day' if assessment.maintenance_calories else 'N/A', 'Daily'],
+            ['Target Calories', f'{assessment.target_calories} cal/day' if assessment.target_calories else 'N/A', 'Daily Goal'],
+        ]
+        metrics_table = Table(metrics_data, colWidths=[2 * 72, 2 * 72, 2 * 72])
+        metrics_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10B981')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+        ]))
+        elements.append(metrics_table)
+        elements.append(Spacer(1, 0.3 * 72))
+        
+        # Dietary Information
+        if assessment.dietary_preferences or assessment.food_allergies:
+            elements.append(Paragraph('Dietary Information', heading_style))
+            dietary_data = []
+            if assessment.dietary_preferences:
+                dietary_data.append(['Dietary Preferences', assessment.dietary_preferences])
+            if assessment.food_allergies:
+                dietary_data.append(['Food Allergies', assessment.food_allergies])
+            
+            dietary_table = Table(dietary_data, colWidths=[3 * 72, 3 * 72])
+            dietary_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#10B981')),
+                ('TEXTCOLOR', (0, 0), (0, -1), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('WRAP', (1, 0), (1, -1), True),
+                ('BACKGROUND', (1, 0), (1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+            ]))
+            elements.append(dietary_table)
+        
+        # Build PDF
+        doc.build(elements)
+        buffer.seek(0)
+        
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="health_assessment_{assessment.assessment_date.strftime("%Y_%m_%d")}.pdf"'
+        return response
+        
+    except HealthAssessment.DoesNotExist:
+        return JsonResponse({'error': 'Assessment not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

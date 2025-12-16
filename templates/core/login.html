@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Login — NutriAI</title>
+  <title>Sign In — FitWell</title>
   <style>
     /* Unified Design System */
     :root {
@@ -81,13 +81,13 @@
     }
     
     .card {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(30, 41, 59, 0.95);
       backdrop-filter: blur(10px);
       border-radius: var(--border-radius);
       box-shadow: var(--shadow);
       padding: 3rem 2.5rem;
       margin: 2rem auto;
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(30, 41, 59, 0.8);
       position: relative;
       overflow: hidden;
       transform-style: preserve-3d;
@@ -367,6 +367,7 @@
       }
     }
   </style>
+<link rel="stylesheet" href="/static/css/nourish_theme.css">
 </head>
 <body>
   <!-- Floating Background Elements -->
@@ -378,7 +379,7 @@
 
   <!-- Header -->
   <div class="header">
-    <a href="/" class="logo">NutriAI</a>
+    <a href="/" class="logo">FitWell</a>
   </div>
 
   <!-- Login Form -->
@@ -441,6 +442,7 @@
 
       <div class="link-container">
         <p>Don't have an account? <a href="{% url 'register' %}">Create one now</a></p>
+        <p style="margin-top: 0.75rem; font-size: 0.9rem;">Didn't receive confirmation email? <a href="{% url 'resend_confirmation' %}">Resend it</a></p>
       </div>
     </div>
   </div>

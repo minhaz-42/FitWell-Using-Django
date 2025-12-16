@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assessment History — NutriAI</title>
+  <title>Assessment History — FitWell</title>
   <style>
     /* Unified Design System */
     :root {
@@ -52,7 +52,7 @@
     
     /* Header */
     header {
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(30, 41, 59, 0.92);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid rgba(226, 232, 240, 0.8);
       position: sticky;
@@ -131,11 +131,11 @@
     
     /* Cards */
     .card {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(30, 41, 59, 0.95);
       border-radius: var(--border-radius);
       box-shadow: var(--shadow-lg);
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(30, 41, 59, 0.8);
       backdrop-filter: blur(10px);
       margin-bottom: 2rem;
     }
@@ -361,23 +361,24 @@
       }
     }
   </style>
+<link rel="stylesheet" href="/static/css/nourish_theme.css">
 </head>
 <body>
   <!-- Header -->
   <header>
     <div class="container">
       <div class="header-content">
-        <a href="{% url 'home' %}" class="logo">NutriAI</a>
+        <a href="{% url 'home' %}" class="logo">FitWell</a>
         <div class="nav-links">
-          <a href="{% url 'home' %}">Home</a>
-          <a href="{% url 'health' %}">Health Assessment</a>
-          <a href="{% url 'chat' %}">AI Nutritionist</a>
-          <a href="{% url 'profile' %}">Profile</a>
+          <a href="{% url 'home' %}">Dashboard</a>
+          <a href="{% url 'health' %}">Body Analysis</a>
+          <a href="{% url 'chat' %}">Ask Coach</a>
+          <a href="{% url 'profile' %}">My Account</a>
           {% if user.is_authenticated %}
-            <a href="{% url 'logout' %}">Logout</a>
+            <a href="{% url 'logout' %}">Sign Out</a>
           {% else %}
-            <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'register' %}">Register</a>
+            <a href="{% url 'login' %}">Sign In</a>
+            <a href="{% url 'register' %}">Sign Up</a>
           {% endif %}
         </div>
       </div>
@@ -441,6 +442,9 @@
                   <a href="{% url 'assessment_detail' assessment.id %}" class="btn btn-primary">
                     🔍 View Full Details
                   </a>
+                  <button onclick="downloadAssessmentPDF({{ assessment.id }})" class="btn btn-outline" style="border-color: #a855f7; color: #7c3aed;">
+                    📥 Download PDF
+                  </button>
                   <a href="{% url 'health' %}" class="btn btn-outline">
                     ➕ New Assessment
                   </a>
@@ -491,13 +495,13 @@
     <div class="container">
       <div class="footer-content">
         <div class="footer-section">
-          <h4>NutriAI</h4>
+          <h4>FitWell</h4>
           <p>Your intelligent nutrition companion for a healthier lifestyle.</p>
         </div>
         <div class="footer-section">
           <h4>Features</h4>
-          <a href="{% url 'health' %}">Health Assessment</a>
-          <a href="{% url 'chat' %}">AI Nutritionist</a>
+          <a href="{% url 'health' %}">Body Analysis</a>
+          <a href="{% url 'chat' %}">Ask Coach</a>
           <a href="{% url 'assessment_history' %}">Progress Tracking</a>
         </div>
         <div class="footer-section">
@@ -508,9 +512,21 @@
         </div>
       </div>
       <div style="padding-top: 2rem; border-top: 1px solid var(--gray); color: var(--gray-light); text-align: center;">
-        <p>&copy; 2025 NutriAI. All rights reserved.</p>
+        <p>&copy; 2025 FitWell. All rights reserved.</p>
       </div>
     </div>
   </footer>
+
+  <script>
+    function downloadAssessmentPDF(assessmentId) {
+      const url = `/export/health-assessment/pdf/?id=${assessmentId}`;
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `assessment-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
 </body>
 </html>

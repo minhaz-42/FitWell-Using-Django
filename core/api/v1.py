@@ -5,11 +5,86 @@ from pydantic import BaseModel
 import base64
 import io
 from PIL import Image
-try:
-    import pytesseract
-    PYTESSERACT_AVAILABLE = True
-except ImportError:
-    PYTESSERACT_AVAILABLE = False
+def is_pytesseract_available():
+    try:
+        import pytesseract  # type: ignore
+        # also verify tesseract binary is callable
+        try:
+            _ = pytesseract.get_tesseract_version()
+        except Exception:
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def run_ocr_on_pil_image(img):
+    """Run OCR on a PIL Image. Try `pytesseract` first; if it's not available,
+    fall back to calling `tesseract` CLI using a temp file.
+    Includes preprocessing optimized for prescription images.
+    Returns the extracted text (str).
+    """
+    try:
+        import pytesseract
+        from PIL import ImageEnhance, ImageFilter, ImageOps
+        
+        # Preprocess image for better OCR accuracy
+        # Convert to RGB if needed
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Convert to grayscale for better text extraction
+        img_gray = ImageOps.grayscale(img)
+        
+        # Enhance contrast to make text more readable
+        contrast_enhancer = ImageEnhance.Contrast(img_gray)
+        img_gray = contrast_enhancer.enhance(2.0)
+        
+        # Enhance brightness
+        brightness_enhancer = ImageEnhance.Brightness(img_gray)
+        img_gray = brightness_enhancer.enhance(1.1)
+        
+        # Sharpen the image to make text clearer
+        img_gray = img_gray.filter(ImageFilter.SHARPEN)
+        
+        # Upscale small images for better OCR
+        width, height = img_gray.size
+        if max(width, height) < 1000:
+            scale_factor = 1000 / max(width, height)
+            new_size = (int(width * scale_factor), int(height * scale_factor))
+            img_gray = img_gray.resize(new_size, Image.Resampling.LANCZOS)
+        
+        # Use pytesseract with config optimized for text
+        config = '--psm 6 --oem 3'  # PSM 6 for single uniform block of text
+        text = pytesseract.image_to_string(img_gray, config=config)
+        return text.strip()
+        
+    except Exception as e:
+        logger.warning(f"Pytesseract failed ({e}), trying CLI fallback")
+        # Fallback to tesseract CLI
+        import tempfile, subprocess, os
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tf:
+            tmp_path = tf.name
+            try:
+                img.save(tmp_path)
+                # Call tesseract with configuration
+                out_txt = tmp_path + '_out'
+                cmd = ['tesseract', tmp_path, out_txt, '--psm', '6', '--oem', '3']
+                subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                # read output
+                txt_path = out_txt + '.txt'
+                with open(txt_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    return f.read().strip()
+            finally:
+                # cleanup temp files
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass
+                try:
+                    os.remove(out_txt + '.txt')
+                except Exception:
+                    pass
 import logging
 from core.qwen_client import chat as qwen_chat
 import os
@@ -26,13 +101,28 @@ logger = logging.getLogger(__name__)
 api = NinjaAPI(urls_namespace='api_v1')
 
 NUTRITION_SYSTEM_PROMPT = """
-You are an expert nutrition and health advisor. Provide evidence-based advice about:
-- Nutrition and diet
+You are an expert nutrition and health advisor with extensive knowledge in:
+- Nutrition, diet, and food science
 - Exercise and physical activity
 - Health and wellness
-- Weight management
-- Meal planning
-Keep responses concise, practical, and tailored to the user's health context when provided.
+- Weight management and body composition
+- Meal planning and dietary strategies
+
+When answering questions, structure your responses as follows:
+
+1. **Clear Definition/Explanation**: Start with a clear, concise definition of the concept being discussed.
+
+2. **Key Details**: Provide important facts, formulas, or measurements (e.g., for BMI: "BMI = weight (kg) / height (m)²")
+
+3. **Interpretation/Context**: Explain what the information means in practical terms.
+
+4. **Categories/Ranges**: Where applicable, provide relevant ranges or categories (e.g., BMI categories: Underweight <18.5, Normal 18.5-24.9, Overweight 25-29.9, Obese ≥30)
+
+5. **Practical Application**: Explain how to use this information in real life.
+
+6. **Important Notes/Limitations**: Mention any limitations, contraindications, or when to seek professional help.
+
+Provide evidence-based, accurate, and helpful information. Be detailed but readable. Tailor advice to the user's health context when provided.
 """
 
 class ChatRequest(BaseModel):
@@ -41,6 +131,7 @@ class ChatRequest(BaseModel):
     language: str = "en"
     bmi_category: Optional[str] = None
     images: Optional[list] = None  # Optional list of base64 data URLs or raw base64 strings
+    conversation_id: Optional[str] = None
 
 class ChatResponse(BaseModel):
     response: str
@@ -322,141 +413,158 @@ class MealPlanPDFRequest(BaseModel):
 @api.post("/health-assessment/download-pdf")
 def download_meal_plan_pdf(request, data: MealPlanPDFRequest):
     """Generate and download meal plan as PDF"""
-    from reportlab.lib.pagesizes import letter
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
-    from reportlab.lib import colors
-    from datetime import datetime
-    from django.http import HttpResponse
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+        from reportlab.lib import colors
+        from datetime import datetime
+        from django.http import HttpResponse
+    except ImportError as e:
+        logger.error(f"Missing dependency for PDF generation: {e}")
+        return {'error': f'PDF generation not available: {str(e)}'}
     
-    # Create PDF in memory
-    pdf_buffer = io.BytesIO()
-    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, topMargin=0.75*inch, bottomMargin=0.75*inch)
-    
-    # Styles
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#4F46E5'),
-        spaceAfter=12,
-        alignment=1  # Center
-    )
-    heading_style = ParagraphStyle(
-        'CustomHeading',
-        parent=styles['Heading2'],
-        fontSize=14,
-        textColor=colors.HexColor('#4F46E5'),
-        spaceAfter=10,
-        spaceBefore=10
-    )
-    normal_style = ParagraphStyle(
-        'CustomNormal',
-        parent=styles['Normal'],
-        fontSize=10,
-        spaceAfter=6
-    )
-    
-    # Content
-    story = []
-    
-    # Title
-    story.append(Paragraph("🧠 NutriAI - Health Assessment Report", title_style))
-    story.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", normal_style))
-    story.append(Spacer(1, 0.3*inch))
-    
-    # Health Metrics Section
-    story.append(Paragraph("Health Metrics", heading_style))
-    metrics_data = [
-        ['Metric', 'Value'],
-        ['BMI', f"{data.bmi} ({data.bmi_category})"],
-        ['Basal Metabolic Rate (BMR)', f"{data.bmr:,} cal/day"],
-        ['Maintenance Calories', f"{data.maintenance_calories:,} cal/day"],
-        ['Target Daily Calories', f"{data.target_calories:,} cal/day"]
-    ]
-    
-    metrics_table = Table(metrics_data, colWidths=[2.5*inch, 2.5*inch])
-    metrics_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4F46E5')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 11),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#F8FAFC')),
-        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E2E8F0')),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F8FAFC')]),
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
-        ('TOPPADDING', (0, 1), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
-    ]))
-    story.append(metrics_table)
-    story.append(Spacer(1, 0.3*inch))
-    
-    # Meal Plans Section
-    story.append(Paragraph("Recommended Meal Plan", heading_style))
-    
-    # Helper function to get safe text from ingredients
-    def get_ingredients_text(ingredients):
-        if isinstance(ingredients, list):
-            return ', '.join(ingredients)
-        return str(ingredients) if ingredients else 'N/A'
-    
-    for meal_type in ['breakfast', 'lunch', 'dinner']:
-        meal = data.__dict__[meal_type]
+    try:
+        # Create PDF in memory
+        pdf_buffer = io.BytesIO()
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, topMargin=0.75*inch, bottomMargin=0.75*inch)
         
-        story.append(Paragraph(f"<b>{meal_type.title()}</b>", ParagraphStyle(
-            'MealType',
-            parent=styles['Normal'],
-            fontSize=12,
+        # Styles
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
             textColor=colors.HexColor('#4F46E5'),
-            spaceAfter=6,
-            spaceBefore=6
+            spaceAfter=12,
+            alignment=1  # Center
+        )
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=14,
+            textColor=colors.HexColor('#4F46E5'),
+            spaceAfter=10,
+            spaceBefore=10
+        )
+        normal_style = ParagraphStyle(
+            'CustomNormal',
+            parent=styles['Normal'],
+            fontSize=10,
+            spaceAfter=6
+        )
+        
+        # Content
+        story = []
+        
+        # Title
+        story.append(Paragraph("FitWell - Health Assessment Report", title_style))
+        story.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", normal_style))
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Health Metrics Section
+        story.append(Paragraph("Health Metrics", heading_style))
+        metrics_data = [
+            ['Metric', 'Value'],
+            ['BMI', f"{data.bmi} ({data.bmi_category})"],
+            ['Basal Metabolic Rate (BMR)', f"{data.bmr:,} cal/day"],
+            ['Maintenance Calories', f"{data.maintenance_calories:,} cal/day"],
+            ['Target Daily Calories', f"{data.target_calories:,} cal/day"]
+        ]
+        
+        metrics_table = Table(metrics_data, colWidths=[2.5*inch, 2.5*inch])
+        metrics_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4F46E5')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#F8FAFC')),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E2E8F0')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F8FAFC')]),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('TOPPADDING', (0, 1), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+        ]))
+        story.append(metrics_table)
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Meal Plans Section
+        story.append(Paragraph("Recommended Meal Plan", heading_style))
+        
+        # Helper function to get safe text from ingredients
+        def get_ingredients_text(ingredients):
+            if isinstance(ingredients, list):
+                items = []
+                for i in ingredients:
+                    if isinstance(i, dict):
+                        items.append(i.get('name', str(i)))
+                    else:
+                        items.append(str(i))
+                return ', '.join(items)
+            return str(ingredients) if ingredients else 'N/A'
+        
+        for meal_type in ['breakfast', 'lunch', 'dinner']:
+            meal = getattr(data, meal_type, {})
+            if isinstance(meal, dict):
+                story.append(Paragraph(f"<b>{meal_type.title()}</b>", ParagraphStyle(
+                    'MealType',
+                    parent=styles['Normal'],
+                    fontSize=12,
+                    textColor=colors.HexColor('#4F46E5'),
+                    spaceAfter=6,
+                    spaceBefore=6
+                )))
+                
+                # Meal details
+                meal_details = f"""
+                <b>Meal:</b> {meal.get('name', 'N/A')}<br/>
+                <b>Description:</b> {meal.get('description', 'N/A')}<br/>
+                <b>Calories:</b> {meal.get('calories', 0)} cal | 
+                <b>Protein:</b> {meal.get('protein_g', 0)}g | 
+                <b>Carbs:</b> {meal.get('carbs_g', 0)}g | 
+                <b>Fats:</b> {meal.get('fats_g', 0)}g<br/>
+                <b>Ingredients:</b> {get_ingredients_text(meal.get('ingredients', 'N/A'))}<br/>
+                <b>Preparation:</b> {meal.get('preparation', 'N/A')}
+                """
+                story.append(Paragraph(meal_details, normal_style))
+                story.append(Spacer(1, 0.2*inch))
+        
+        # Health Analysis Section
+        story.append(Paragraph("Health Analysis & Recommendations", heading_style))
+        analysis_text = (data.analysis or "Assessment complete!").replace('<', '&lt;').replace('>', '&gt;')
+        story.append(Paragraph(analysis_text, normal_style))
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Footer
+        footer_text = """
+        <i>This report is based on your health assessment. For medical advice, please consult with a healthcare professional.<br/>
+        FitWell - Your Personal Nutrition AI Assistant</i>
+        """
+        story.append(Paragraph(footer_text, ParagraphStyle(
+            'Footer',
+            parent=styles['Normal'],
+            fontSize=9,
+            textColor=colors.grey,
+            alignment=1
         )))
         
-        # Meal details
-        meal_details = f"""
-        <b>Meal:</b> {meal.get('name', 'N/A')}<br/>
-        <b>Description:</b> {meal.get('description', 'N/A')}<br/>
-        <b>Calories:</b> {meal.get('calories', 0)} cal | 
-        <b>Protein:</b> {meal.get('protein_g', 0)}g | 
-        <b>Carbs:</b> {meal.get('carbs_g', 0)}g | 
-        <b>Fats:</b> {meal.get('fats_g', 0)}g<br/>
-        <b>Ingredients:</b> {get_ingredients_text(meal.get('ingredients', 'N/A'))}<br/>
-        <b>Preparation:</b> {meal.get('preparation', 'N/A')}
-        """
-        story.append(Paragraph(meal_details, normal_style))
-        story.append(Spacer(1, 0.2*inch))
-    
-    # Health Analysis Section
-    story.append(Paragraph("Health Analysis & Recommendations", heading_style))
-    story.append(Paragraph(data.analysis or "Assessment complete!", normal_style))
-    story.append(Spacer(1, 0.3*inch))
-    
-    # Footer
-    footer_text = """
-    <i>This report is based on your health assessment. For medical advice, please consult with a healthcare professional.<br/>
-    NutriAI - Your Personal Nutrition AI Assistant</i>
-    """
-    story.append(Paragraph(footer_text, ParagraphStyle(
-        'Footer',
-        parent=styles['Normal'],
-        fontSize=9,
-        textColor=colors.grey,
-        alignment=1
-    )))
-    
-    # Build PDF
-    doc.build(story)
-    
-    # Return PDF as response
-    pdf_buffer.seek(0)
-    response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="NutriAI_MealPlan_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
-    return response
+        # Build PDF
+        doc.build(story)
+        
+        # Return PDF as response
+        pdf_buffer.seek(0)
+        pdf_content = pdf_buffer.getvalue()
+        response = HttpResponse(pdf_content, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="FitWell_MealPlan_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+        return response
+        
+    except Exception as e:
+        logger.error(f"PDF generation failed: {str(e)}", exc_info=True)
+        return {'error': f'Failed to generate PDF: {str(e)}'}
 
 
 @api.post("/chat", response=ChatResponse)
@@ -478,10 +586,10 @@ def chat(request, data: ChatRequest):
         with transaction.atomic():
             # Get or create conversation
             conversation = None
-            if data.__dict__.get('conversation_id'):
+            if getattr(data, 'conversation_id', None):
                 try:
                     conversation = Conversation.objects.select_for_update().get(
-                        id=data.__dict__.get('conversation_id'), 
+                        id=getattr(data, 'conversation_id', None), 
                         user=request.user
                     )
                 except Conversation.DoesNotExist:
@@ -569,11 +677,12 @@ def chat(request, data: ChatRequest):
                         img = img.convert('RGB')
                     
                     logger.debug(f"Image {idx}: Running OCR on image (mode: {img.mode}, size: {img.size})")
-                    if PYTESSERACT_AVAILABLE:
-                        text = pytesseract.image_to_string(img)
+                    try:
+                        text = run_ocr_on_pil_image(img)
                         text = text.strip()
-                    else:
-                        text = "(OCR not available - pytesseract not installed)"
+                    except Exception as ocr_err:
+                        logger.error(f"Image {idx}: OCR failed: {ocr_err}")
+                        text = "(OCR failed)"
                     logger.debug(f"Image {idx}: OCR result length: {len(text)} chars")
                     ocr_texts.append(f"Image {idx}: {text if text else '(no text found in image)'}")
                 except Exception as e:
@@ -590,7 +699,7 @@ def chat(request, data: ChatRequest):
         messages.append({"role": "user", "content": data.message})
         
         logger.debug(f"Sending request to Qwen with messages: {messages}")
-        ai_response = qwen_chat(messages=messages, model="qwen", temperature=0.7, max_tokens=150)
+        ai_response = qwen_chat(messages=messages, model="qwen", temperature=0.7, max_tokens=500)
         logger.debug(f"Received response from Qwen: {ai_response}")
         
         # Save AI response
@@ -734,11 +843,13 @@ def test_ocr(request, data: ChatRequest):
                 img = img.convert('RGB')
             
             # Run OCR
-            if PYTESSERACT_AVAILABLE:
-                text = pytesseract.image_to_string(img)
+            try:
+                text = run_ocr_on_pil_image(img)
                 text = text.strip()
-            else:
-                text = "(OCR not available - pytesseract not installed)"
+            except Exception as ocr_err:
+                result["error"] = f"OCR failed: {str(ocr_err)}"
+                ocr_results.append(result)
+                continue
             
             result["success"] = True
             result["text"] = text if text else "(no text found)"

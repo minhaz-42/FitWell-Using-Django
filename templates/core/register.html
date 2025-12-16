@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Register — NutriAI</title>
+  <title>Sign Up — FitWell</title>
   <style>
     /* Unified Design System */
     :root {
@@ -81,13 +81,13 @@
     }
     
     .card {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(30, 41, 59, 0.95);
       backdrop-filter: blur(10px);
       border-radius: var(--border-radius);
       box-shadow: var(--shadow);
       padding: 3rem 2.5rem;
       margin: 2rem auto;
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(30, 41, 59, 0.8);
       position: relative;
       overflow: hidden;
       transform-style: preserve-3d;
@@ -325,6 +325,7 @@
       }
     }
   </style>
+<link rel="stylesheet" href="/static/css/nourish_theme.css">
 </head>
 <body>
   <!-- Floating Background Elements -->
@@ -336,30 +337,53 @@
 
   <!-- Header -->
   <div class="header">
-    <a href="/" class="logo">NutriAI</a>
+    <a href="/" class="logo">FitWell</a>
   </div>
 
   <!-- Registration Form -->
   <div class="container">
     <div class="card">
       <h1>Create an account</h1>
-      <p>Join NutriAI to save assessments and get personalized nutrition plans.</p>
+      <p>Join FitWell to save assessments and get personalized nutrition plans.</p>
 
       <form method="post" novalidate>
         {% csrf_token %}
         
-        {% for field in form %}
-          <div class="form-group">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}
-              <small>{{ field.help_text }}</small>
-            {% endif %}
-            {% for err in field.errors %}
-              <div class="error">{{ err }}</div>
-            {% endfor %}
-          </div>
-        {% endfor %}
+        <!-- Username Field -->
+        <div class="form-group">
+          <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+          {{ form.username }}
+          {% if form.username.errors %}
+            <div class="error">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <div class="error">{{ form.email.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}
+            <div class="error">{{ form.password1.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Password Confirmation Field -->
+        <div class="form-group">
+          <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}
+            <div class="error">{{ form.password2.errors.0 }}</div>
+          {% endif %}
+        </div>
 
         <button type="submit">Create Account</button>
       </form>

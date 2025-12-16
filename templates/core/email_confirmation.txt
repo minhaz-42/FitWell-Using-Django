@@ -1,0 +1,11 @@
+Hi {{ user.first_name|default:user.username }},
+
+Thank you for creating a FitWell account. To complete your registration please confirm your email address by clicking the link below or copying it into your browser:
+
+{{ confirmation_url }}
+
+This link will expire in {{ expiry_hours }} hours.
+
+If you didn't create this account, you can safely ignore this message.
+
+— The FitWell Team

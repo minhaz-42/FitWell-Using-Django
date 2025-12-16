@@ -1,0 +1,237 @@
+/* NourishAI - Aesthetic Dark Theme */
+/* Modern Navy & Cyan palette with smooth gradients */
+
+:root {
+    /* Background Colors - Deep Navy to Midnight */
+    --bg-primary: #0a1929;      /* Deep Navy */
+    --bg-secondary: #132f4c;    /* Navy Blue */
+    --bg-elevated: #1a3a52;     /* Lighter Navy */
+    --bg-hover: #204862;        /* Hover state */
+    
+    /* Text Colors - High contrast & readable */
+    --text-primary: #ffffff;    /* Pure white */
+    --text-secondary: #b0c4de;  /* Light steel blue */
+    --text-muted: #7b98b3;      /* Muted blue */
+    
+    /* Accent Colors - Vibrant Cyan & Teal */
+    --accent-primary: #00e5ff;  /* Bright Cyan */
+    --accent-secondary: #18ffff; /* Light Cyan */
+    --accent-hover: #00d4e6;    /* Darker Cyan */
+    --accent-glow: rgba(0, 229, 255, 0.3);
+    
+    /* Success & Health Colors */
+    --success: #00e676;         /* Bright Green */
+    --success-soft: rgba(0, 230, 118, 0.1);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #00e5ff 0%, #00bcd4 50%, #0097a7 100%);
+    --gradient-bg: linear-gradient(180deg, #0a1929 0%, #051423 100%);
+    --gradient-card: linear-gradient(145deg, rgba(19, 47, 76, 0.9), rgba(10, 25, 41, 0.9));
+    
+    /* Shadows & Effects */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --shadow-glow: 0 0 20px var(--accent-glow);
+    
+    /* Border */
+    --border-color: rgba(0, 229, 255, 0.2);
+    --border-subtle: rgba(255, 255, 255, 0.1);
+}
+
+/* ========== Base Styles ========== */
+body {
+    background: var(--gradient-bg) !important;
+    color: var(--text-primary) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+/* ========== Card & Surface Elements ========== */
+.bg-white,
+.bg-gray-50,
+.bg-gray-100,
+.card,
+.panel,
+[class*="bg-white"],
+[class*="bg-gray"] {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-subtle) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Elevated surfaces */
+.card:hover,
+.panel:hover {
+    background: var(--bg-elevated) !important;
+    box-shadow: var(--shadow-lg) !important;
+    transform: translateY(-2px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== Text Colors ========== */
+h1, h2, h3, h4, h5, h6,
+.text-gray-900,
+.text-gray-800,
+.text-gray-700,
+.text-dark {
+    color: var(--text-primary) !important;
+}
+
+.text-gray-600,
+.text-gray-500,
+p {
+    color: var(--text-secondary) !important;
+}
+
+.text-gray-400,
+.text-muted,
+small {
+    color: var(--text-muted) !important;
+}
+
+/* ========== Form Elements ========== */
+input,
+select,
+textarea,
+.form-control {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text-primary) !important;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.form-control:focus {
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow) !important;
+    outline: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* ========== Buttons ========== */
+.btn-primary,
+button[type="submit"],
+.bg-blue-600,
+.bg-indigo-600 {
+    background: var(--gradient-primary) !important;
+    border: none !important;
+    color: var(--bg-primary) !important;
+    font-weight: 600 !important;
+    box-shadow: var(--shadow-md) !important;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover,
+button[type="submit"]:hover,
+.bg-blue-600:hover,
+.bg-indigo-600:hover {
+    box-shadow: var(--shadow-glow) !important;
+    transform: translateY(-2px);
+}
+
+/* ========== Links ========== */
+a {
+    color: var(--accent-primary) !important;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--accent-secondary) !important;
+    text-decoration: none;
+}
+
+/* ========== Header & Navigation ========== */
+header,
+nav,
+.navbar {
+    background: rgba(10, 25, 41, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+/* ========== Footer ========== */
+footer {
+    background: var(--bg-primary) !important;
+    border-top: 1px solid var(--border-subtle) !important;
+    color: var(--text-secondary) !important;
+}
+
+/* ========== Success/Info Elements ========== */
+.bg-green-500,
+.bg-green-600,
+.text-green-600 {
+    background: var(--success) !important;
+    color: var(--bg-primary) !important;
+}
+
+.bg-green-50 {
+    background: var(--success-soft) !important;
+    border: 1px solid var(--success) !important;
+}
+
+/* ========== Accent Elements ========== */
+.text-blue-600,
+.text-indigo-600,
+.text-primary {
+    color: var(--accent-primary) !important;
+}
+
+/* ========== Glassmorphism Effects ========== */
+.glass-effect {
+    background: rgba(19, 47, 76, 0.7) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color) !important;
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
+}
+
+/* ========== Utility Classes ========== */
+.shadow {
+    box-shadow: var(--shadow-md) !important;
+}
+
+.shadow-lg {
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.rounded {
+    border-radius: 8px !important;
+}
+
+.rounded-lg {
+    border-radius: 16px !important;
+}
+
+/* ========== Animations ========== */
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
+    50% { box-shadow: 0 0 30px var(--accent-glow), 0 0 40px var(--accent-glow); }
+}
+
+.animate-glow {
+    animation: glow 2s ease-in-out infinite;
+}

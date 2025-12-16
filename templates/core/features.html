@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features — FitWell</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --primary-light: #D1FAE5;
+            --primary-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            --secondary: #8B5CF6;
+            --accent: #F59E0B;
+        }
+        
+        body { 
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+            min-height: 100vh;
+        }
+        
+        .tab-active { 
+            border-bottom: 3px solid var(--primary); 
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .card-hover { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover { 
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15);
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+        }
+        
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+        
+        .meal-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #E5E7EB;
+        }
+        
+        .meal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+        
+        .article-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #E5E7EB;
+        }
+        
+        .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+        
+        .category-active {
+            background: var(--primary-gradient) !important;
+            color: white !important;
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-loading {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .nutrition-badge {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .floating-btn {
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .floating-btn:hover {
+            box-shadow: 0 12px 25px rgba(16, 185, 129, 0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+<link rel="stylesheet" href="/static/css/nourish_theme.css">
+</head>
+<body class="bg-gray-50">
+    {% csrf_token %}
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 py-4 px-6 shadow-sm sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shadow-sm">
+                        <i class="fas fa-leaf text-green-600"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-800">FitWell Features</h1>
+                </div>
+                <a href="{% url 'chat' %}" class="text-gray-600 hover:text-gray-800 transition flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i> Back to Chat
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto py-12 px-6">
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="stat-card">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-heart text-pink-500"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-gray-600">Favorite Meals</div>
+                            <div class="text-3xl font-bold text-gray-800" id="totalMeals">—</div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2">Your personalized meal collection</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-book text-blue-500"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-gray-600">Articles</div>
+                            <div class="text-3xl font-bold text-gray-800" id="totalArticles">—</div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2">Nutrition knowledge at your fingertips</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-purple-500"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-gray-600">Progress Entries</div>
+                            <div class="text-3xl font-bold text-gray-800" id="totalProgress">—</div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2">Tracking your health journey</div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex gap-8 border-b border-gray-200 mb-10 overflow-x-auto pb-4">
+                <button class="tab-btn py-2 px-1 text-gray-600 hover:text-gray-800 font-medium transition flex items-center whitespace-nowrap" data-tab="favorite-meals">
+                    <i class="fas fa-heart mr-2"></i>Favorite Meals
+                </button>
+                <button class="tab-btn py-2 px-1 text-gray-600 hover:text-gray-800 font-medium transition flex items-center whitespace-nowrap" data-tab="articles">
+                    <i class="fas fa-book mr-2"></i>Nutrition Articles
+                </button>
+            </div>
+
+            <!-- Favorite Meals Tab -->
+            <div id="favorite-meals" class="tab-content hidden fade-in">
+                <div class="mb-8 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Your Favorite Meals</h2>
+                        <p class="text-gray-600 mt-2">Save and organize meals you love for quick access</p>
+                    </div>
+                    <button onclick="openFavoriteMealModal()" class="bg-green-600 text-white px-5 py-3 rounded-xl hover:bg-green-700 transition flex items-center gap-2 floating-btn">
+                        <i class="fas fa-plus"></i>Add Favorite Meal
+                    </button>
+                </div>
+                
+                <div id="favoriteMealsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Loading state -->
+                    <div class="col-span-full">
+                        <div class="text-center py-16 text-gray-400">
+                            <i class="fas fa-heart text-6xl mb-4 opacity-20 pulse-loading"></i>
+                            <p class="text-xl font-semibold">Loading your favorite meals...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nutrition Articles Tab -->
+            <div id="articles" class="tab-content hidden fade-in">
+                <div class="mb-8">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800">Nutrition Articles</h2>
+                            <p class="text-gray-600 mt-2">Expand your knowledge with expert nutrition content</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 flex-wrap mb-6">
+                        <button class="category-btn px-4 py-2 rounded-full bg-green-600 text-white font-medium transition category-active" data-category="">
+                            All Topics
+                        </button>
+                        <!-- Categories will be added by JS -->
+                    </div>
+                </div>
+                
+                <div id="articlesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Loading state -->
+                    <div class="col-span-full">
+                        <div class="text-center py-16 text-gray-400">
+                            <i class="fas fa-book text-6xl mb-4 opacity-20 pulse-loading"></i>
+                            <p class="text-xl font-semibold">Loading articles...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Favorite Meal Modal -->
+    <div id="favoriteMealModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4 transform transition-all fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Add Favorite Meal</h3>
+                <button onclick="closeFavoriteMealModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Meal</label>
+                    <select id="mealSelect" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition">
+                        <option value="">Choose a meal...</option>
+                        <!-- Options will be populated by JS -->
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                    <div class="flex space-x-1" id="ratingStars">
+                        <button type="button" class="text-2xl text-gray-300 hover:text-yellow-400 transition" data-rating="1">☆</button>
+                        <button type="button" class="text-2xl text-gray-300 hover:text-yellow-400 transition" data-rating="2">☆</button>
+                        <button type="button" class="text-2xl text-gray-300 hover:text-yellow-400 transition" data-rating="3">☆</button>
+                        <button type="button" class="text-2xl text-gray-300 hover:text-yellow-400 transition" data-rating="4">☆</button>
+                        <button type="button" class="text-2xl text-gray-300 hover:text-yellow-400 transition" data-rating="5">☆</button>
+                    </div>
+                    <input type="hidden" id="ratingValue" value="">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Personal Notes</label>
+                    <textarea id="notesInput" class="w-full border border-gray-300 rounded-xl px-4 py-3 h-28 resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition" placeholder="Add your thoughts, modifications, or why you like this meal..."></textarea>
+                </div>
+                
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeFavoriteMealModal()" class="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium">Cancel</button>
+                    <button onclick="saveFavoriteMeal()" class="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition font-medium flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i> Save Meal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Article Detail Modal -->
+    <div id="articleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden transform transition-all fade-in">
+            <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">Article Details</h3>
+                <button onclick="closeArticleModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                <div id="articleContent">
+                    <!-- Article content will load here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.tab-btn').click();
+            loadStats();
+            setupRatingStars();
+        });
+
+        // Setup rating stars interaction
+        function setupRatingStars() {
+            const stars = document.querySelectorAll('#ratingStars button');
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const rating = parseInt(star.dataset.rating);
+                    document.getElementById('ratingValue').value = rating;
+                    
+                    // Update star display
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.textContent = '★';
+                            s.classList.remove('text-gray-300');
+                            s.classList.add('text-yellow-400');
+                        } else {
+                            s.textContent = '☆';
+                            s.classList.remove('text-yellow-400');
+                            s.classList.add('text-gray-300');
+                        }
+                    });
+                });
+            });
+        }
+
+        // Load stats on all tabs
+        async function loadStats() {
+            try {
+                const [mealsResp, articlesResp, progressResp] = await Promise.all([
+                    fetch('/api/favorite-meals/', { credentials: 'same-origin' }),
+                    fetch('/api/nutrition-articles/', { credentials: 'same-origin' }),
+                    fetch('/api/progress-tracking/', { credentials: 'same-origin' })
+                ]);
+                
+                const meals = await mealsResp.json();
+                const articles = await articlesResp.json();
+                const progress = await progressResp.json();
+
+                document.getElementById('totalMeals').textContent = meals.favorites?.length || 0;
+                document.getElementById('totalArticles').textContent = articles.articles?.length || 0;
+                document.getElementById('totalProgress').textContent = progress.entries?.length || 0;
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+                
+                // Hide all tabs
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+                
+                // Show selected tab
+                document.getElementById(tabName).classList.remove('hidden');
+                btn.classList.add('tab-active');
+                
+                // Load data
+                if (tabName === 'favorite-meals') loadFavoriteMeals();
+                else if (tabName === 'articles') loadArticles();
+            });
+        });
+
+        // Favorite Meals Functions
+        async function loadFavoriteMeals() {
+            try {
+                const resp = await fetch('/api/favorite-meals/', { credentials: 'same-origin' });
+                const data = await resp.json();
+                
+                const container = document.getElementById('favoriteMealsContainer');
+                if (data.favorites.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-16 text-gray-400">
+                            <i class="fas fa-heart text-6xl mb-4 opacity-30"></i>
+                            <h3 class="text-xl font-semibold mb-2">No favorite meals yet</h3>
+                            <p class="text-gray-500 max-w-md mx-auto">Add meals from your health assessments to build your personal collection of favorites.</p>
+                            <button onclick="openFavoriteMealModal()" class="mt-6 bg-green-600 text-white px-5 py-3 rounded-xl hover:bg-green-700 transition">
+                                <i class="fas fa-plus mr-2"></i>Add Your First Favorite
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = data.favorites.map(fav => `
+                    <div class="meal-card">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-gray-900 text-lg mb-1">${fav.name}</h3>
+                                    <p class="text-sm text-gray-500 line-clamp-2">${fav.description || 'No description available'}</p>
+                                </div>
+                                <button onclick="deleteFavoriteMeal(${fav.id})" class="text-red-400 hover:text-red-600 transition ml-2" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-3 my-4">
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-xl border border-green-100">
+                                    <div class="text-xs text-gray-600 font-medium mb-1">Calories</div>
+                                    <div class="font-bold text-green-600 text-lg">${fav.calories || '—'}</div>
+                                </div>
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-3 rounded-xl border border-blue-100">
+                                    <div class="text-xs text-gray-600 font-medium mb-1">Protein</div>
+                                    <div class="font-bold text-blue-600 text-lg">${fav.protein || '—'}g</div>
+                                </div>
+                                <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-3 rounded-xl border border-purple-100">
+                                    <div class="text-xs text-gray-600 font-medium mb-1">Carbs</div>
+                                    <div class="font-bold text-purple-600 text-lg">${fav.carbs || '—'}g</div>
+                                </div>
+                            </div>
+                            
+                            ${fav.rating ? `
+                                <div class="flex items-center gap-2 my-3">
+                                    <span class="text-yellow-400 text-lg">${'★'.repeat(fav.rating)}${'☆'.repeat(5-fav.rating)}</span>
+                                    <span class="text-sm text-gray-600">${fav.rating}/5</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${fav.notes ? `
+                                <div class="bg-gray-50 p-3 rounded-lg mt-4 border-l-4 border-green-400">
+                                    <p class="text-sm text-gray-600"><strong class="text-gray-700">My Notes:</strong> ${fav.notes}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading favorites:', err);
+                document.getElementById('favoriteMealsContainer').innerHTML = `
+                    <div class="col-span-full text-center py-16 text-gray-400">
+                        <i class="fas fa-exclamation-triangle text-6xl mb-4 opacity-30"></i>
+                        <h3 class="text-xl font-semibold mb-2">Error loading favorites</h3>
+                        <p class="text-gray-500">Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function deleteFavoriteMeal(id) {
+            if (!confirm('Are you sure you want to remove this meal from your favorites?')) return;
+            try {
+                const resp = await fetch(`/api/favorite-meals/${id}/delete/`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                    headers: { 'X-CSRFToken': CSRF_TOKEN }
+                });
+                if (resp.ok) {
+                    loadFavoriteMeals();
+                    loadStats(); // Update the stats
+                }
+            } catch (err) {
+                console.error('Error deleting favorite:', err);
+                alert('Error deleting favorite meal. Please try again.');
+            }
+        }
+
+        function openFavoriteMealModal() {
+            document.getElementById('favoriteMealModal').classList.remove('hidden');
+            // Reset form
+            document.getElementById('ratingValue').value = '';
+            document.getElementById('notesInput').value = '';
+            
+            // Reset stars
+            const stars = document.querySelectorAll('#ratingStars button');
+            stars.forEach(star => {
+                star.textContent = '☆';
+                star.classList.remove('text-yellow-400');
+                star.classList.add('text-gray-300');
+            });
+            
+            // Load meal options (this would typically come from an API)
+            loadMealOptions();
+        }
+
+        function closeFavoriteMealModal() {
+            document.getElementById('favoriteMealModal').classList.add('hidden');
+        }
+
+        async function loadMealOptions() {
+            const mealSelect = document.getElementById('mealSelect');
+            mealSelect.innerHTML = '<option value="">Choose a meal...</option>';
+            
+            const meals = [
+                { id: 1, name: 'Greek Yogurt Parfait with Oatmeal' },
+                { id: 2, name: 'Quinoa Salad with Roasted Vegetables' },
+                { id: 3, name: 'Grilled Chicken Salad' }
+            ];
+            
+            meals.forEach(meal => {
+                const option = document.createElement('option');
+                option.value = meal.id;
+                option.textContent = meal.name;
+                mealSelect.appendChild(option);
+            });
+        }
+
+        async function saveFavoriteMeal() {
+            const mealId = document.getElementById('mealSelect').value;
+            const ratingStr = document.getElementById('ratingValue').value;
+            const notes = document.getElementById('notesInput').value;
+
+            if (!mealId) {
+                alert('Please select a meal');
+                return;
+            }
+
+            try {
+                const payload = { 
+                    meal_id: parseInt(mealId), 
+                    rating: ratingStr ? parseInt(ratingStr) : null, 
+                    notes 
+                };
+                console.log('Sending payload:', payload);
+                
+                const resp = await fetch('/api/favorite-meals/add/', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': CSRF_TOKEN
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+                console.log('Response:', data);
+                
+                if (data.success) {
+                    closeFavoriteMealModal();
+                    loadFavoriteMeals();
+                    loadStats(); // Update the stats
+                } else {
+                    alert('Error saving favorite: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Error saving favorite:', err);
+                alert('Error saving favorite meal. Please try again.');
+            }
+        }
+
+        // Articles Functions
+        async function loadArticles() {
+            try {
+                const articles = [
+                    {
+                        id: 1,
+                        title: "The Complete Guide to Macronutrients",
+                        summary: "Learn about proteins, carbs, and fats - what they do, why you need them, and how to balance them in your diet.",
+                        category: "nutrition_basics",
+                        author: "FitWell",
+                        published_date: "2025-11-20",
+                        read_time: 8,
+                        image_url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=300&fit=crop"
+                    },
+                    {
+                        id: 2,
+                        title: "5 Superfoods You Should Eat Weekly",
+                        summary: "Discover nutrient-dense foods that can boost your health and energy levels. From berries to leafy greens.",
+                        category: "healthy_eating",
+                        author: "FitWell",
+                        published_date: "2025-11-18",
+                        read_time: 6,
+                        image_url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&h=300&fit=crop"
+                    },
+                    {
+                        id: 3,
+                        title: "Understanding BMI and Body Composition",
+                        summary: "Go beyond BMI - learn what body composition means and how to track your fitness goals more effectively.",
+                        category: "fitness",
+                        author: "FitWell",
+                        published_date: "2025-11-15",
+                        read_time: 7,
+                        image_url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=300&fit=crop"
+                    },
+                    {
+                        id: 4,
+                        title: "Meal Prep 101: Planning Your Week",
+                        summary: "Master meal preparation strategies to save time and stay on top of your nutrition goals throughout the week.",
+                        category: "meal_planning",
+                        author: "FitWell",
+                        published_date: "2025-11-12",
+                        read_time: 10,
+                        image_url: "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop"
+                    },
+                    {
+                        id: 5,
+                        title: "Hydration: More Than Just Water",
+                        summary: "Explore the importance of proper hydration, electrolytes, and how much water you really need daily.",
+                        category: "hydration",
+                        author: "FitWell",
+                        published_date: "2025-11-10",
+                        read_time: 5,
+                        image_url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=300&fit=crop"
+                    },
+                    {
+                        id: 6,
+                        title: "Plant-Based Protein Sources",
+                        summary: "Complete guide to getting enough protein on a vegetarian or vegan diet with delicious recipes.",
+                        category: "diet_types",
+                        author: "FitWell",
+                        published_date: "2025-11-08",
+                        read_time: 8,
+                        image_url: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500&h=300&fit=crop"
+                    }
+                ];
+
+                const container = document.getElementById('articlesContainer');
+                if (articles.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-16 text-gray-400">
+                            <i class="fas fa-book text-6xl mb-4 opacity-30"></i>
+                            <h3 class="text-xl font-semibold mb-2">No articles available</h3>
+                            <p class="text-gray-500">Check back later for new nutrition content.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = articles.map(article => `
+                    <div class="article-card cursor-pointer" onclick="openArticle(${article.id})">
+                        <div class="relative overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 h-48">
+                            ${article.image_url ? 
+                                `<img src="${article.image_url}" alt="${article.title}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">` : 
+                                '<div class="w-full h-full flex items-center justify-center"><i class="fas fa-book-open text-green-300 text-5xl opacity-50"></i></div>'
+                            }
+                            <div class="absolute top-3 right-3">
+                                <span class="nutrition-badge">${article.category.replace(/_/g, ' ').toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-gray-900 text-lg mb-3 line-clamp-2">${article.title}</h3>
+                            <p class="text-sm text-gray-600 mb-4 line-clamp-3">${article.summary}</p>
+                            <div class="flex justify-between items-center text-xs text-gray-500">
+                                <span>📖 ${article.read_time} min read</span>
+                                <span>${new Date(article.published_date).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading articles:', err);
+                document.getElementById('articlesContainer').innerHTML = `
+                    <div class="col-span-full text-center py-16 text-gray-400">
+                        <i class="fas fa-exclamation-triangle text-6xl mb-4 opacity-30"></i>
+                        <h3 class="text-xl font-semibold mb-2">Error loading articles</h3>
+                        <p class="text-gray-500">Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function openArticle(id) {
+            const articleContents = {
+                1: {
+                    title: "The Complete Guide to Macronutrients",
+                    author: "FitWell",
+                    category: "nutrition_basics",
+                    published_date: "2025-11-20",
+                    read_time: 8,
+                    image_url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=400&fit=crop",
+                    content: `<p>Macronutrients are the three main nutrients your body needs in large quantities: proteins, carbohydrates, and fats. Understanding the role of each is crucial for maintaining optimal health and achieving your fitness goals.</p>
+                    <h2>Proteins</h2>
+                    <p>Proteins are essential for building and repairing tissues, producing enzymes and hormones, and maintaining a strong immune system. A good rule of thumb is to consume 0.8-1.2 grams of protein per pound of body weight, depending on your activity level.</p>
+                    <h2>Carbohydrates</h2>
+                    <p>Carbs are your primary energy source, especially important for athletes and active individuals. Focus on complex carbs like whole grains, oats, and sweet potatoes rather than refined sugars.</p>
+                    <h2>Fats</h2>
+                    <p>Don't fear fats! Healthy fats from avocados, nuts, and olive oil support hormone production and nutrient absorption. Aim for 0.3-0.5 grams per pound of body weight daily.</p>`
+                },
+                2: {
+                    title: "5 Superfoods You Should Eat Weekly",
+                    author: "FitWell",
+                    category: "healthy_eating",
+                    published_date: "2025-11-18",
+                    read_time: 6,
+                    image_url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=400&fit=crop",
+                    content: `<p>Superfoods are nutrient-dense foods that provide exceptional health benefits. Here are five you should incorporate into your weekly meals.</p>
+                    <h2>1. Blueberries</h2>
+                    <p>Packed with antioxidants, blueberries support brain health and reduce inflammation.</p>
+                    <h2>2. Spinach</h2>
+                    <p>Rich in iron, calcium, and vitamins, spinach is a nutritional powerhouse for any diet.</p>
+                    <h2>3. Salmon</h2>
+                    <p>High in omega-3 fatty acids, salmon supports heart and brain health.</p>
+                    <h2>4. Almonds</h2>
+                    <p>Loaded with protein and healthy fats, almonds make a perfect snack.</p>
+                    <h2>5. Sweet Potatoes</h2>
+                    <p>Rich in vitamin A and fiber, sweet potatoes are an excellent complex carb.</p>`
+                },
+                3: {
+                    title: "Understanding BMI and Body Composition",
+                    author: "FitWell",
+                    category: "fitness",
+                    published_date: "2025-11-15",
+                    read_time: 7,
+                    image_url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=400&fit=crop",
+                    content: `<p>While BMI is a useful screening tool, it doesn't tell the whole story about your health. Body composition is a better indicator of fitness.</p>
+                    <h2>What is Body Composition?</h2>
+                    <p>Body composition refers to the percentage of body fat, muscle, bone, and water that make up your total body weight.</p>
+                    <h2>Why It Matters</h2>
+                    <p>Two people with the same BMI can have very different body compositions. Muscle weighs more than fat, so an athlete might have a high BMI but low body fat.</p>
+                    <h2>How to Track It</h2>
+                    <p>Consider DEXA scans, bioimpedance analysis, or skinfold measurements for more accurate body composition analysis.</p>`
+                },
+                4: {
+                    title: "Meal Prep 101: Planning Your Week",
+                    author: "FitWell",
+                    category: "meal_planning",
+                    published_date: "2025-11-12",
+                    read_time: 10,
+                    image_url: "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&h=400&fit=crop",
+                    content: `<p>Meal prepping is the key to staying consistent with your nutrition goals. Here's how to get started.</p>
+                    <h2>Step 1: Plan Your Meals</h2>
+                    <p>Decide what you'll eat for each meal for the week ahead.</p>
+                    <h2>Step 2: Make a Shopping List</h2>
+                    <p>Shop for all ingredients at once to save time and money.</p>
+                    <h2>Step 3: Batch Cook</h2>
+                    <p>Cook proteins, grains, and vegetables in bulk and store in containers.</p>
+                    <h2>Step 4: Portion and Store</h2>
+                    <p>Divide into individual portions and store in the fridge or freezer.</p>`
+                },
+                5: {
+                    title: "Hydration: More Than Just Water",
+                    author: "FitWell",
+                    category: "hydration",
+                    published_date: "2025-11-10",
+                    read_time: 5,
+                    image_url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=400&fit=crop",
+                    content: `<p>Proper hydration is fundamental to health. Here's everything you need to know.</p>
+                    <h2>Daily Water Intake</h2>
+                    <p>Aim for 8-10 glasses of water daily, or more if you exercise regularly.</p>
+                    <h2>Electrolytes Matter</h2>
+                    <p>For intense workouts, electrolytes like sodium and potassium help maintain hydration.</p>
+                    <h2>Signs of Dehydration</h2>
+                    <p>Dark urine, fatigue, and dizziness are signs you need more fluids.</p>`
+                },
+                6: {
+                    title: "Plant-Based Protein Sources",
+                    author: "FitWell",
+                    category: "diet_types",
+                    published_date: "2025-11-08",
+                    read_time: 8,
+                    image_url: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&h=400&fit=crop",
+                    content: `<p>Getting enough protein on a plant-based diet is easier than you think. Here are the best sources.</p>
+                    <h2>Legumes</h2>
+                    <p>Lentils, chickpeas, and beans provide 15-20g of protein per cup.</p>
+                    <h2>Tofu and Tempeh</h2>
+                    <p>These fermented soy products are complete proteins with all amino acids.</p>
+                    <h2>Nuts and Seeds</h2>
+                    <p>Almonds, peanuts, and hemp seeds are protein-rich snacks.</p>
+                    <h2>Whole Grains</h2>
+                    <p>Quinoa, oats, and whole wheat contain more protein than refined grains.</p>`
+                }
+            };
+            
+            const article = articleContents[id];
+            if (!article) {
+                alert('Article not found');
+                return;
+            }
+            
+            document.getElementById('articleContent').innerHTML = `
+                <article class="prose prose-lg max-w-none">
+                    <header class="mb-8">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-4">${article.title}</h1>
+                        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6">
+                            <span class="flex items-center gap-1">
+                                <i class="fas fa-user"></i> ${article.author}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i class="fas fa-calendar"></i> ${new Date(article.published_date).toLocaleDateString()}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i class="fas fa-clock"></i> ${article.read_time} min read
+                            </span>
+                            <span class="nutrition-badge">${article.category.replace(/_/g, ' ')}</span>
+                        </div>
+                    </header>
+                    
+                    ${article.image_url ? `
+                        <div class="mb-8">
+                            <img src="${article.image_url}" alt="${article.title}" class="w-full rounded-2xl shadow-md">
+                        </div>
+                    ` : ''}
+                    
+                    <div class="article-body text-gray-700 leading-relaxed">
+                        ${article.content}
+                    </div>
+                </article>
+            `;
+            document.getElementById('articleModal').classList.remove('hidden');
+        }
+
+        function closeArticleModal() {
+            document.getElementById('articleModal').classList.add('hidden');
+        }
+
+        function filterArticles(category) {
+            // Update active category button
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                if (btn.dataset.category === category) {
+                    btn.classList.add('category-active');
+                    btn.classList.remove('bg-gray-100', 'text-gray-600');
+                } else {
+                    btn.classList.remove('category-active');
+                    btn.classList.add('bg-gray-100', 'text-gray-600');
+                }
+            });
+            
+            // In a real implementation, this would filter the articles
+            // For now, we'll just reload all articles
+            loadArticles();
+        }
+
+        // Close modals on escape key or clicking outside
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeFavoriteMealModal();
+                closeArticleModal();
+            }
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'favoriteMealModal') {
+                closeFavoriteMealModal();
+            }
+            if (e.target.id === 'articleModal') {
+                closeArticleModal();
+            }
+        });
+    </script>
+</body>
+</html>

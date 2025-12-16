@@ -3,6 +3,7 @@ import time
 import os
 import sys
 import socket
+import threading
 from django.apps import AppConfig
 
 
@@ -76,10 +77,23 @@ class CoreConfig(AppConfig):
             # Start Qwen
             process = subprocess.Popen(
                 ['bash', script_path],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
                 cwd=base_dir
             )
+            
+            # Print server output in background thread
+            def print_output():
+                try:
+                    for line in process.stdout:
+                        if line.strip():
+                            print(f"[QWEN] {line.rstrip()}", flush=True)
+                except:
+                    pass
+            
+            output_thread = threading.Thread(target=print_output, daemon=True)
+            output_thread.start()
             
             # Wait and show progress
             for i in range(1, 61):  # Wait up to 60 seconds

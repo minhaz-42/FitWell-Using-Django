@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="NutriAI - Your intelligent nutrition companion for a healthier lifestyle. Get personalized nutrition recommendations powered by AI.">
-    <title>Home — NutriAI | AI-Powered Nutrition Assistant</title>
+    <meta name="description" content="FitWell - Your intelligent nutrition companion for a healthier lifestyle. Get personalized nutrition recommendations powered by AI.">
+    <title>Dashboard — FitWell | AI-Powered Nutrition Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/nourish_theme.css">
     <style>
         /* ============================================
            ENHANCED PREMIUM 3D STYLE SYSTEM
            ============================================ */
         :root {
-            --primary: #4F46E5;
-            --primary-dark: #4338CA;
-            --primary-light: #C7D2FE;
-            --primary-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            --primary: #00e5ff;
+            --primary-dark: #00d4e6;
+            --primary-light: #18ffff;
+            --primary-gradient: linear-gradient(135deg, #00e5ff 0%, #00bcd4 50%, #0097a7 100%);
             --primary-gradient-light: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
-            --secondary: #EC4899;
-            --accent: #10B981;
+            --secondary: #00e676;
+            --accent: #18ffff;
             --light: #F8FAFC;
             --light-gray: #F1F5F9;
             --dark: #1E293B;
@@ -33,7 +34,7 @@
             --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.15);
             --shadow-lg: 0 25px 60px rgba(0, 0, 0, 0.1);
             --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.18);
+            --glass-border: 1px solid rgba(30, 41, 59, 0.18);
             --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             --transition-fast: all 0.2s ease;
             --transition-slow: all 0.8s ease;
@@ -239,7 +240,7 @@
 
         /* Header */
         header {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(30, 41, 59, 0.85);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(226, 232, 240, 0.5);
             position: sticky;
@@ -466,7 +467,7 @@
             width: 100%;
             height: 100%;
             border-radius: 35px 25px 30px 40px;
-            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 100%);
+            background: linear-gradient(45deg, transparent 30%, rgba(30, 41, 59, 0.3) 100%);
             pointer-events: none;
         }
 
@@ -559,7 +560,7 @@
 
         /* Enhanced 3D Features Section */
         .features {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(30, 41, 59, 0.7);
             padding: 7rem 0;
             border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
             margin-top: 4rem;
@@ -669,7 +670,7 @@
             width: 100%;
             height: 100%;
             border-radius: 40px 30px 35px 45px;
-            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.4) 100%);
+            background: linear-gradient(45deg, transparent 30%, rgba(30, 41, 59, 0.4) 100%);
             pointer-events: none;
         }
 
@@ -786,7 +787,7 @@
 
         .copyright {
             padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(30, 41, 59, 0.1);
             color: var(--gray-light);
         }
 
@@ -804,7 +805,7 @@
         .social-links a {
             width: 40px;
             height: 40px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -874,7 +875,7 @@
                 top: 80px;
                 left: 0;
                 width: 100%;
-                background: rgba(255, 255, 255, 0.95);
+                background: rgba(30, 41, 59, 0.95);
                 backdrop-filter: blur(20px);
                 flex-direction: column;
                 padding: 2rem;
@@ -1028,6 +1029,7 @@
             }
         }
     </style>
+<link rel="stylesheet" href="/static/css/nourish_theme.css">
 </head>
 <body>
     <!-- Custom cursor -->
@@ -1065,23 +1067,23 @@
             <nav class="navbar" role="navigation" aria-label="Main navigation">
                 <a href="/" class="logo">
                     <div class="logo-icon">
-                        <i class="fas fa-brain"></i>
+                        <i class="fas fa-heartbeat"></i>
                     </div>
-                    <span>NutriAI</span>
+                    <span>FitWell</span>
                 </a>
                 <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="nav-links">
-                    <a href="/" class="active">Home</a>
-                    <a href="{% url 'health' %}">Health Assessment</a>
-                    <a href="{% url 'chat' %}">AI Nutritionist</a>
-                    <a href="{% url 'profile' %}">Profile</a>
+                    <a href="/" class="active">Dashboard</a>
+                    <a href="{% url 'health' %}">Body Analysis</a>
+                    <a href="{% url 'chat' %}">Ask Coach</a>
+                    <a href="{% url 'profile' %}">My Account</a>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'logout' %}">Logout</a>
+                        <a href="{% url 'logout' %}">Sign Out</a>
                     {% else %}
-                        <a href="{% url 'login' %}">Login</a>
-                        <a href="{% url 'register' %}">Register</a>
+                        <a href="{% url 'login' %}">Sign In</a>
+                        <a href="{% url 'register' %}">Sign Up</a>
                     {% endif %}
                 </div>
             </nav>
@@ -1100,7 +1102,7 @@
                         <div class="card-icon">
                             <i class="fas fa-heartbeat"></i>
                         </div>
-                        <h3>Health Assessment</h3>
+                        <h3>Body Analysis</h3>
                         <p>Calculate your BMI, get personalized insights, and receive tailored nutrition recommendations based on your health profile.</p>
                     </a>
 
@@ -1134,7 +1136,7 @@
     <!-- Features Section -->
     <section class="features">
         <div class="container">
-            <h2>Why Choose NutriAI?</h2>
+            <h2>Why Choose FitWell?</h2>
             <div class="features-grid">
                 <div class="feature-item">
                     <div class="feature-icon">
@@ -1166,25 +1168,25 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4>NutriAI</h4>
+                    <h4>FitWell</h4>
                     <p>Your intelligent nutrition companion for a healthier lifestyle.</p>
                     <div class="social-links">
-                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.linkedin.com/in/tanvir-ahmed-2b9809370" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.facebook.com/share/16buZsF87d/?mibextid=wwXIfr" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/_min._.haz_/" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="mailto:tanvirahmed.minhaz1@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
                     </div>
                 </div>
                 <div class="footer-section">
                     <h4>Quick Links</h4>
-                    <a href="{% url 'health' %}">Health Assessment</a>
-                    <a href="{% url 'chat' %}">AI Nutritionist</a>
-                    <a href="{% url 'profile' %}">Your Profile</a>
+                    <a href="{% url 'health' %}">Body Analysis</a>
+                    <a href="{% url 'chat' %}">Ask Coach</a>
+                    <a href="{% url 'profile' %}">My Account</a>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'logout' %}">Logout</a>
+                        <a href="{% url 'logout' %}">Sign Out</a>
                     {% else %}
-                        <a href="{% url 'login' %}">Login</a>
-                        <a href="{% url 'register' %}">Register</a>
+                        <a href="{% url 'login' %}">Sign In</a>
+                        <a href="{% url 'register' %}">Sign Up</a>
                     {% endif %}
                 </div>
                 <div class="footer-section">
@@ -1196,7 +1198,7 @@
                 </div>
             </div>
             <div class="copyright">
-                <p>&copy; 2025 NutriAI. All rights reserved.</p>
+                <p>&copy; 2025 FitWell. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -1341,10 +1343,10 @@
             window.addEventListener('scroll', function() {
                 const header = document.querySelector('header');
                 if (window.scrollY > 50) {
-                    header.style.background = 'rgba(255, 255, 255, 0.95)';
+                    header.style.background = 'rgba(30, 41, 59, 0.95)';
                     header.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.1)';
                 } else {
-                    header.style.background = 'rgba(255, 255, 255, 0.85)';
+                    header.style.background = 'rgba(30, 41, 59, 0.85)';
                     header.style.boxShadow = 'none';
                 }
             });

@@ -1,0 +1,15 @@
+Hi {{ user.first_name|default:user.username }},
+
+Thank you for creating an account with FitWell! Your account has been successfully created and is ready to use.
+
+You can log in at: http://localhost:8000/
+
+Here are a few things to get started:
+- Complete your health profile
+- Run your first health assessment
+- Ask our AI assistant for personalized meal suggestions
+- Track your progress and achieve your health goals
+
+We're excited to support you on your health and nutrition journey!
+
+— The FitWell Team

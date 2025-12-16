@@ -6,7 +6,8 @@ from datetime import timedelta
 from django.utils import timezone
 from .models import (
     UserProfile, HealthAssessment, MealSuggestion, Conversation, Message,
-    FavoriteMeal, ProgressTracking, NutritionArticle, UsageTracking, UserStats
+    FavoriteMeal, ProgressTracking, NutritionArticle, UsageTracking, UserStats,
+    EmailConfirmation, EmailLog
 )
 
 # ============================================
@@ -223,11 +224,13 @@ class MealSuggestionAdmin(admin.ModelAdmin):
 # ============================================
 @admin.register(Conversation)
 class ConversationAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'get_message_count', 'language', 'get_created_date', 'updated_at')
-    list_filter = ('language', 'model_used', 'created_at')
+    list_display = ('title', 'user', 'get_message_count', 'language', 'pinned', 'get_created_date', 'updated_at')
+    list_filter = ('language', 'model_used', 'pinned', 'created_at', 'updated_at')
     search_fields = ('user__username', 'title')
     readonly_fields = ('id', 'created_at', 'updated_at', 'get_message_count', 'get_last_message')
     date_hierarchy = 'created_at'
+    ordering = ('-pinned', '-updated_at')
+    actions = ['backfill_updated_at']
     
     fieldsets = (
         ('Conversation Info', {
@@ -271,6 +274,21 @@ class ConversationAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return True
+
+    def backfill_updated_at(self, request, queryset):
+        """Admin action: set conversation.updated_at to last message timestamp if newer.
+        Useful to correct sorting for existing data.
+        """
+        from django.db.models import Max
+        updated_count = 0
+        for conv in queryset:
+            last_ts = conv.messages.aggregate(m=Max('timestamp'))['m']
+            if last_ts and (conv.updated_at is None or last_ts > conv.updated_at):
+                conv.updated_at = last_ts
+                conv.save(update_fields=['updated_at'])
+                updated_count += 1
+        self.message_user(request, f"Updated 'updated_at' for {updated_count} conversation(s).")
+    backfill_updated_at.short_description = "Backfill Updated At from last message"
 
 
 @admin.register(Message)
@@ -611,8 +629,115 @@ class NutritionArticleAdmin(admin.ModelAdmin):
 
 
 # ============================================
+# EMAIL CONFIRMATION ADMIN
+# ============================================
+@admin.register(EmailConfirmation)
+class EmailConfirmationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'get_status', 'get_expiry_status', 'get_created_date', 'confirmed_at')
+    list_filter = ('is_confirmed', 'created_at')
+    search_fields = ('user__username', 'user__email', 'token')
+    readonly_fields = ('token', 'created_at', 'confirmed_at', 'user')
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        ('User Info', {
+            'fields': ('user', 'token')
+        }),
+        ('Confirmation Status', {
+            'fields': ('is_confirmed', 'created_at', 'confirmed_at')
+        }),
+    )
+    
+    def get_status(self, obj):
+        if obj.is_confirmed:
+            return format_html('<span style="color: #10b981; font-weight: bold;">✓ Confirmed</span>')
+        return format_html('<span style="color: #ef4444; font-weight: bold;">✗ Pending</span>')
+    get_status.short_description = 'Status'
+    
+    def get_expiry_status(self, obj):
+        if obj.is_confirmed:
+            return format_html('<span style="color: #10b981;">Confirmed</span>')
+        if obj.is_expired():
+            return format_html('<span style="color: #ef4444; font-weight: bold;">Expired</span>')
+        return format_html('<span style="color: #f59e0b;">Active</span>')
+    get_expiry_status.short_description = 'Expiry Status'
+    
+    def get_created_date(self, obj):
+        return obj.created_at.strftime('%Y-%m-%d %H:%M')
+    get_created_date.short_description = 'Created'
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return True
+
+
+# ============================================
+# EMAIL LOG ADMIN
+# ============================================
+@admin.register(EmailLog)
+class EmailLogAdmin(admin.ModelAdmin):
+    list_display = ('user', 'get_email_type', 'email_address', 'get_status', 'get_sent_date')
+    list_filter = ('email_type', 'is_sent', 'sent_at')
+    search_fields = ('user__username', 'email_address', 'subject')
+    readonly_fields = ('user', 'email_address', 'sent_at', 'subject')
+    date_hierarchy = 'sent_at'
+    
+    fieldsets = (
+        ('Email Info', {
+            'fields': ('user', 'email_address', 'email_type', 'subject')
+        }),
+        ('Content', {
+            'fields': ('message_preview',)
+        }),
+        ('Status', {
+            'fields': ('is_sent', 'error_message', 'sent_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_email_type(self, obj):
+        type_colors = {
+            'confirmation': '#3b82f6',
+            'welcome': '#10b981',
+            'password_reset': '#f59e0b',
+            'notification': '#8b5cf6',
+            'other': '#64748b',
+        }
+        color = type_colors.get(obj.email_type, '#64748b')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold;">{}</span>',
+            color, obj.get_email_type_display()
+        )
+    get_email_type.short_description = 'Type'
+    
+    def get_status(self, obj):
+        if obj.is_sent:
+            return format_html('<span style="color: #10b981; font-weight: bold;">✓ Sent</span>')
+        return format_html('<span style="color: #ef4444; font-weight: bold;">✗ Failed</span>')
+    get_status.short_description = 'Status'
+    
+    def get_sent_date(self, obj):
+        return obj.sent_at.strftime('%Y-%m-%d %H:%M:%S')
+    get_sent_date.short_description = 'Sent'
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return True
+
+
+# ============================================
 # ADMIN SITE CUSTOMIZATION
 # ============================================
-admin.site.site_header = "NutriAI Administration"
-admin.site.site_title = "NutriAI Admin"
-admin.site.index_title = "Welcome to NutriAI Admin Dashboard"
+admin.site.site_header = "FitWell Administration"
+admin.site.site_title = "FitWell Admin"
+admin.site.index_title = "Welcome to FitWell Admin Dashboard"

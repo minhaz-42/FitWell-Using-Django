@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile — NutriAI</title>
+  <title>My Account — FitWell</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     /* ============================================
-       UNIFIED STYLE SYSTEM (Matches Home)
+       ENHANCED STYLE SYSTEM
        ============================================ */
     :root {
       --primary: #4F46E5;
@@ -80,7 +81,7 @@
 
     /* Header */
     header {
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(30, 41, 59, 0.92);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid rgba(226, 232, 240, 0.8);
       position: sticky;
@@ -174,20 +175,20 @@
 
     .profile-container {
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 320px 1fr;
       gap: 2.5rem;
     }
 
-    /* Sidebar */
+    /* Enhanced Sidebar */
     .sidebar {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(30, 41, 59, 0.95);
       border-radius: var(--border-radius);
       padding: 2.5rem 2rem;
       height: fit-content;
       box-shadow: var(--shadow);
       position: sticky;
       top: 100px;
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(30, 41, 59, 0.8);
       backdrop-filter: blur(10px);
     }
 
@@ -196,32 +197,74 @@
       margin-bottom: 2rem;
       border-bottom: 1px solid var(--gray-light);
       padding-bottom: 2rem;
+      position: relative;
     }
 
     .user-avatar {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       background: var(--primary-gradient);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 2.5rem;
-      margin: 0 auto 1rem;
+      margin: 0 auto 1.5rem;
       color: white;
       box-shadow: var(--shadow);
+      position: relative;
+      transition: var(--transition);
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.05);
+    }
+
+    .user-avatar::after {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      z-index: -1;
+      opacity: 0.5;
+      filter: blur(8px);
     }
 
     .user-name {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: var(--dark);
       margin-bottom: 0.25rem;
     }
 
     .user-email {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: var(--gray);
+      margin-bottom: 1rem;
+    }
+
+    .user-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--light-gray);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .user-status::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
     }
 
     .sidebar-menu {
@@ -231,7 +274,7 @@
     }
 
     .sidebar-link {
-      padding: 0.9rem 1rem;
+      padding: 1rem 1.25rem;
       border-radius: var(--border-radius-sm);
       text-decoration: none;
       color: var(--dark);
@@ -244,12 +287,26 @@
       cursor: pointer;
       border: none;
       background: transparent;
+      position: relative;
     }
 
     .sidebar-link:hover,
     .sidebar-link.active {
       background: var(--primary-light);
       color: var(--primary);
+      transform: translateX(5px);
+    }
+
+    .sidebar-link.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 60%;
+      background: var(--primary);
+      border-radius: 0 4px 4px 0;
     }
 
     /* Content Area */
@@ -265,19 +322,33 @@
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
 
-    /* Card */
+    h1::before {
+      content: "👤";
+      font-size: 2.5rem;
+    }
+
+    /* Enhanced Card */
     .card {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(30, 41, 59, 0.95);
       border-radius: var(--border-radius);
       box-shadow: var(--shadow);
       padding: 2.5rem;
       margin-bottom: 2rem;
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(30, 41, 59, 0.8);
       backdrop-filter: blur(10px);
       position: relative;
       overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
     }
 
     .card::before {
@@ -290,17 +361,35 @@
       background: var(--primary-gradient);
     }
 
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
     .card-title {
       font-size: 1.5rem;
       font-weight: 600;
-      margin-bottom: 1.5rem;
       color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    /* Stats Grid */
+    .card-title i {
+      color: var(--primary);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    /* Enhanced Stats Grid */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
@@ -312,11 +401,29 @@
       text-align: center;
       border: 1px solid var(--gray-light);
       transition: var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-box::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary-gradient);
     }
 
     .stat-box:hover {
       transform: translateY(-4px);
       box-shadow: var(--shadow);
+    }
+
+    .stat-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: var(--primary);
     }
 
     .stat-value {
@@ -334,7 +441,7 @@
       letter-spacing: 0.5px;
     }
 
-    /* Form */
+    /* Enhanced Form */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -352,6 +459,14 @@
       font-weight: 600;
       font-size: 0.95rem;
       color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    label i {
+      color: var(--primary);
+      width: 16px;
     }
 
     input, select, textarea {
@@ -375,7 +490,7 @@
       min-height: 100px;
     }
 
-    /* Buttons */
+    /* Enhanced Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -449,7 +564,7 @@
       margin-top: 1.5rem;
     }
 
-    /* Assessment Items */
+    /* Enhanced Assessment Items */
     .assessment-item {
       background: linear-gradient(135deg, var(--light) 0%, var(--light-gray) 100%);
       padding: 1.75rem;
@@ -457,6 +572,18 @@
       margin-bottom: 1.25rem;
       transition: var(--transition);
       border: 1px solid var(--gray-light);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .assessment-item::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--primary-gradient);
     }
 
     .assessment-item:hover {
@@ -482,6 +609,7 @@
 
     .date-icon {
       font-size: 1.5rem;
+      color: var(--primary);
     }
 
     .date-label {
@@ -534,7 +662,7 @@
       gap: 1rem;
       margin-bottom: 1.5rem;
       padding: 1rem;
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(30, 41, 59, 0.5);
       border-radius: var(--border-radius-sm);
     }
 
@@ -558,7 +686,104 @@
       color: var(--dark);
     }
 
-    /* Empty State */
+    /* Enhanced Progress Tracking */
+    .progress-container {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2.5rem;
+    }
+
+    .progress-form-container {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid rgba(16, 185, 129, 0.1);
+    }
+
+    .progress-history-container {
+      max-height: 700px;
+      overflow-y: auto;
+      border-radius: 8px;
+      padding-right: 0.5rem;
+    }
+
+    .progress-entry {
+      border: 1px solid var(--gray-light);
+      border-radius: var(--border-radius-sm);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+      border-left: 4px solid var(--primary);
+      transition: var(--transition-fast);
+    }
+
+    .progress-entry:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .progress-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .progress-entry-date {
+      font-weight: 600;
+      color: var(--dark);
+      font-size: 1rem;
+    }
+
+    .progress-entry-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+
+    .progress-metric {
+      background: white;
+      padding: 0.875rem;
+      border-radius: 8px;
+      border-left: 3px solid;
+    }
+
+    .progress-metric-weight {
+      border-left-color: #10B981;
+    }
+
+    .progress-metric-activity {
+      border-left-color: #3b82f6;
+    }
+
+    .progress-metric-goal {
+      border-left-color: #f59e0b;
+    }
+
+    .progress-metric-notes {
+      border-left-color: #8b5cf6;
+    }
+
+    .progress-metric-label {
+      color: #666;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .progress-metric-value {
+      color: var(--dark);
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .progress-metric-unit {
+      color: #999;
+      font-size: 0.875rem;
+    }
+
+    /* Enhanced Empty State */
     .empty-state {
       text-align: center;
       padding: 3rem 2rem;
@@ -568,6 +793,7 @@
     .empty-icon {
       font-size: 3.5rem;
       margin-bottom: 1rem;
+      opacity: 0.7;
     }
 
     .empty-state p {
@@ -591,14 +817,21 @@
       text-decoration: underline;
     }
 
-    /* Alerts */
+    /* Enhanced Alerts */
     .alert {
       padding: 1.25rem;
       border-radius: var(--border-radius-sm);
       margin-bottom: 1.5rem;
       border-left: 4px solid;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(30, 41, 59, 0.95);
       backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .alert-icon {
+      font-size: 1.5rem;
     }
 
     .alert-success {
@@ -635,12 +868,16 @@
       }
 
       .profile-container {
-        grid-template-columns: 240px 1fr;
+        grid-template-columns: 280px 1fr;
         gap: 2rem;
       }
 
       h1 {
         font-size: 2rem;
+      }
+
+      .progress-container {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -713,6 +950,10 @@
       .sidebar {
         padding: 1.5rem;
       }
+
+      .progress-container {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 480px) {
@@ -761,8 +1002,13 @@
       .stat-box {
         padding: 1.25rem;
       }
+
+      .progress-entry-metrics {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
+<link rel="stylesheet" href="/static/css/nourish_theme.css">
 </head>
 <body>
   <div class="floating-elements">
@@ -773,16 +1019,16 @@
   <header>
     <div class="container">
       <nav class="navbar">
-        <a href="{% url 'home' %}" class="logo">NutriAI</a>
+        <a href="{% url 'home' %}" class="logo">FitWell</a>
         <div class="nav-links">
-          <a href="{% url 'home' %}">Home</a>
-          <a href="{% url 'health' %}">Health Assessment</a>
-          <a href="{% url 'chat' %}">AI Nutritionist</a>
-          <a href="{% url 'profile' %}" class="active">Profile</a>
+          <a href="{% url 'home' %}">Dashboard</a>
+          <a href="{% url 'health' %}">Body Analysis</a>
+          <a href="{% url 'chat' %}">Ask Coach</a>
+          <a href="{% url 'profile' %}" class="active">My Account</a>
           {% if user.is_authenticated %}
-            <a href="{% url 'logout' %}">Logout</a>
+            <a href="{% url 'logout' %}">Sign Out</a>
           {% else %}
-            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'login' %}">Sign In</a>
           {% endif %}
         </div>
       </nav>
@@ -797,118 +1043,359 @@
             <div class="user-avatar">👤</div>
             <div class="user-name">{{ user.first_name|default:user.username }}</div>
             <div class="user-email">{{ user.email }}</div>
+            <div class="user-status">Active Member</div>
           </div>
 
           <nav class="sidebar-menu">
-            <a href="#personal-info" class="sidebar-link active" onclick="scrollToSection('personal-info'); return false;">📋 Personal Info</a>
-            <a href="#assessments" class="sidebar-link" onclick="scrollToSection('assessments'); return false;">📊 Assessments</a>
-            <a href="#account" class="sidebar-link" onclick="scrollToSection('account'); return false;">⚙️ Account</a>
-            <a href="{% url 'health' %}" class="sidebar-link">📈 New Assessment</a>
-            <a href="{% url 'assessment_history' %}" class="sidebar-link">📑 History</a>
-            <a href="{% url 'chat' %}" class="sidebar-link">💬 Chat</a>
+            <a href="#personal-info" class="sidebar-link active" onclick="scrollToSection('personal-info'); return false;">
+              <i class="fas fa-user-circle"></i> Personal Info
+            </a>
+            <a href="#progress" class="sidebar-link" onclick="scrollToSection('progress'); return false;">
+              <i class="fas fa-chart-line"></i> Progress Tracking
+            </a>
+            <a href="#assessments" class="sidebar-link" onclick="scrollToSection('assessments'); return false;">
+              <i class="fas fa-clipboard-check"></i> Assessments
+            </a>
+            <a href="#account" class="sidebar-link" onclick="scrollToSection('account'); return false;">
+              <i class="fas fa-cog"></i> Account
+            </a>
+            <a href="{% url 'health' %}" class="sidebar-link">
+              <i class="fas fa-plus-circle"></i> New Assessment
+            </a>
+            <a href="{% url 'assessment_history' %}" class="sidebar-link">
+              <i class="fas fa-history"></i> History
+            </a>
+            <a href="{% url 'chat' %}" class="sidebar-link">
+              <i class="fas fa-comments"></i> Chat
+            </a>
           </nav>
         </aside>
 
         <div class="content-area">
-          <h1>👤 Your Profile</h1>
+          <h1>My Account</h1>
 
           {% if messages %}
             {% for message in messages %}
               <div class="alert alert-{% if 'success' in message.tags %}success{% else %}error{% endif %}">
-                {{ message }}
+                <div class="alert-icon">
+                  {% if 'success' in message.tags %}
+                    <i class="fas fa-check-circle"></i>
+                  {% else %}
+                    <i class="fas fa-exclamation-circle"></i>
+                  {% endif %}
+                </div>
+                <div>{{ message }}</div>
               </div>
             {% endfor %}
           {% endif %}
 
           {% if total_assessments > 0 %}
             <div class="stats-grid">
-              <div class="stat-box">
-                <div class="stat-value">{{ total_assessments }}</div>
-                <div class="stat-label">Assessments</div>
+              <div class="stat-box" style="position: relative; overflow: visible;">
+                <div style="position: absolute; top: -10px; right: 10px; background: #4F46E5; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;">TOTAL</div>
+                <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div class="stat-value" style="color: #4F46E5;">{{ total_assessments }}</div>
+                <div class="stat-label">Assessments Completed</div>
+                <div style="font-size: 0.7rem; color: #64748B; font-weight: 500; margin-top: 0.5rem;">Track your progress</div>
               </div>
-              <div class="stat-box">
-                <div class="stat-value">{{ latest_bmi|default:"-" }}</div>
-                <div class="stat-label">BMI</div>
+              <div class="stat-box" style="position: relative; overflow: visible;">
+                <div style="position: absolute; top: -10px; right: 10px; background: {% if latest_bmi_category == 'Normal weight' %}#10B981{% elif latest_bmi_category == 'Underweight' %}#3b82f6{% elif latest_bmi_category == 'Overweight' %}#F59E0B{% else %}#EF4444{% endif %}; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;">{{ latest_bmi_category|upper }}</div>
+                <div class="stat-icon">
+                  {% if latest_bmi_category == 'Normal weight' %}
+                    <i class="fas fa-smile" style="color: #10B981;"></i>
+                  {% elif latest_bmi_category == 'Underweight' %}
+                    <i class="fas fa-lightbulb" style="color: #3b82f6;"></i>
+                  {% elif latest_bmi_category == 'Overweight' %}
+                    <i class="fas fa-exclamation-circle" style="color: #F59E0B;"></i>
+                  {% else %}
+                    <i class="fas fa-alert-circle" style="color: #EF4444;"></i>
+                  {% endif %}
+                </div>
+                <div class="stat-value" style="color: {% if latest_bmi_category == 'Normal weight' %}#10B981{% elif latest_bmi_category == 'Underweight' %}#3b82f6{% elif latest_bmi_category == 'Overweight' %}#F59E0B{% else %}#EF4444{% endif %};">{{ latest_bmi|default:"-" }}</div>
+                <div class="stat-label">Current BMI</div>
+                <div style="font-size: 0.7rem; color: {% if latest_bmi_category == 'Normal weight' %}#10B981{% elif latest_bmi_category == 'Underweight' %}#3b82f6{% elif latest_bmi_category == 'Overweight' %}#F59E0B{% else %}#EF4444{% endif %}; font-weight: 600; margin-top: 0.5rem;">{{ latest_bmi_category }}</div>
               </div>
-              <div class="stat-box">
-                <div class="stat-value">{% if bmi_trend == "increasing" %}↗{% elif bmi_trend == "decreasing" %}↘{% else %}→{% endif %}</div>
+              <div class="stat-box" style="position: relative; overflow: visible;">
+                <div style="position: absolute; top: -10px; right: 10px; background: {% if bmi_trend == 'decreasing' %}#10B981{% elif bmi_trend == 'increasing' %}#EF4444{% else %}#F59E0B{% endif %}; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;">{% if bmi_trend == 'decreasing' %}IMPROVING{% elif bmi_trend == 'increasing' %}INCREASING{% else %}STABLE{% endif %}</div>
+                <div class="stat-icon">
+                  {% if bmi_trend == "increasing" %}
+                    <i class="fas fa-arrow-trend-up" style="color: #EF4444;"></i>
+                  {% elif bmi_trend == "decreasing" %}
+                    <i class="fas fa-arrow-trend-down" style="color: #10B981;"></i>
+                  {% else %}
+                    <i class="fas fa-chart-line" style="color: #F59E0B;"></i>
+                  {% endif %}
+                </div>
+                <div class="stat-value" style="{% if bmi_trend == 'decreasing' %}color: #10B981{% elif bmi_trend == 'increasing' %}color: #EF4444{% else %}color: #F59E0B{% endif %};">{% if bmi_trend == "increasing" %}↗ High{% elif bmi_trend == "decreasing" %}↘ Good{% else %}→ Stable{% endif %}</div>
                 <div class="stat-label">BMI Trend</div>
+                {% if bmi_change_percentage %}<div style="font-size: 0.7rem; color: {% if bmi_trend == 'decreasing' %}#10B981{% elif bmi_trend == 'increasing' %}#EF4444{% else %}#F59E0B{% endif %}; font-weight: 600; margin-top: 0.5rem;">{{ bmi_change_percentage|floatformat:1 }}% change</div>{% endif %}
               </div>
-              <div class="stat-box">
-                <div class="stat-value">{% if weight_trend == "increasing" %}↗{% elif weight_trend == "decreasing" %}↘{% else %}→{% endif %}</div>
+              <div class="stat-box" style="position: relative; overflow: visible;">
+                <div style="position: absolute; top: -10px; right: 10px; background: {% if weight_trend == 'decreasing' %}#10B981{% elif weight_trend == 'increasing' %}#EF4444{% else %}#F59E0B{% endif %}; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;">{% if weight_trend == 'decreasing' %}LOSING{% elif weight_trend == 'increasing' %}GAINING{% else %}STABLE{% endif %}</div>
+                <div class="stat-icon">
+                  {% if weight_trend == "increasing" %}
+                    <i class="fas fa-arrow-trend-up" style="color: #EF4444;"></i>
+                  {% elif weight_trend == "decreasing" %}
+                    <i class="fas fa-arrow-trend-down" style="color: #10B981;"></i>
+                  {% else %}
+                    <i class="fas fa-weight-scale" style="color: #F59E0B;"></i>
+                  {% endif %}
+                </div>
+                <div class="stat-value" style="{% if weight_trend == 'decreasing' %}color: #10B981{% elif weight_trend == 'increasing' %}color: #EF4444{% else %}color: #F59E0B{% endif %};">
+                  {% if weight_trend == "increasing" %}
+                    ↗ +{{ weight_change|default:"?" }} kg
+                  {% elif weight_trend == "decreasing" %}
+                    ↘ -{{ weight_change|default:"?" }} kg
+                  {% else %}
+                    → {{ weight_change|default:"0" }} kg
+                  {% endif %}
+                </div>
                 <div class="stat-label">Weight</div>
+                {% if weight_change_percentage %}<div style="font-size: 0.7rem; color: {% if weight_trend == 'decreasing' %}#10B981{% elif weight_trend == 'increasing' %}#EF4444{% else %}#F59E0B{% endif %}; font-weight: 600; margin-top: 0.5rem;">{{ weight_change_percentage|floatformat:1 }}% change</div>{% endif %}
               </div>
             </div>
           {% endif %}
 
           <div class="card" id="personal-info">
-            <h2 class="card-title">📋 Personal Information</h2>
+            <div class="card-header">
+              <h2 class="card-title"><i class="fas fa-user-circle"></i> Personal Information</h2>
+              <p style="margin-bottom: 0; color: var(--gray); font-weight: 500; font-size: 0.95rem;">Update your health profile to get personalized recommendations</p>
+            </div>
             <form method="post">
               {% csrf_token %}
 
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Height (cm)</label>
-                  <input type="number" name="height" value="{{ profile.height|default_if_none:'' }}" step="0.1">
-                </div>
-                <div class="form-group">
-                  <label>Weight (kg)</label>
-                  <input type="number" name="weight" value="{{ profile.weight|default_if_none:'' }}" step="0.1">
-                </div>
-                <div class="form-group">
-                  <label>Date of Birth</label>
-                  <input type="date" name="date_of_birth" value="{{ profile.date_of_birth|date:'Y-m-d'|default_if_none:'' }}">
-                </div>
-                <div class="form-group">
-                  <label>Gender</label>
-                  <select name="gender">
-                    <option value="">Select</option>
-                    <option value="M" {% if profile.gender == 'M' %}selected{% endif %}>Male</option>
-                    <option value="F" {% if profile.gender == 'F' %}selected{% endif %}>Female</option>
-                    <option value="O" {% if profile.gender == 'O' %}selected{% endif %}>Other</option>
-                    <option value="P" {% if profile.gender == 'P' %}selected{% endif %}>Prefer not to say</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Activity Level</label>
-                  <select name="activity_level">
-                    <option value="">Select</option>
-                    <option value="sedentary" {% if profile.activity_level == 'sedentary' %}selected{% endif %}>Sedentary</option>
-                    <option value="light" {% if profile.activity_level == 'light' %}selected{% endif %}>Light</option>
-                    <option value="moderate" {% if profile.activity_level == 'moderate' %}selected{% endif %}>Moderate</option>
-                    <option value="active" {% if profile.activity_level == 'active' %}selected{% endif %}>Active</option>
-                    <option value="very_active" {% if profile.activity_level == 'very_active' %}selected{% endif %}>Very Active</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Health Goals</label>
-                  <input type="text" name="health_goals" value="{{ profile.health_goals|default_if_none:'' }}" placeholder="e.g., Lose weight">
+              <!-- Basic Info Section -->
+              <div style="margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 2px solid var(--gray-light);">
+                <h3 style="font-size: 1rem; font-weight: 700; color: var(--dark); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                  <i class="fas fa-id-card" style="color: var(--primary); font-size: 1.25rem;"></i> Basic Information
+                </h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label><i class="fas fa-ruler-vertical"></i> Height (cm)</label>
+                    <div style="position: relative;">
+                      <input type="number" name="height" value="{{ profile.height|default_if_none:'' }}" step="0.1" placeholder="e.g., 175" style="padding-right: 2.5rem;">
+                      <span style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray); font-weight: 500; pointer-events: none;">cm</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label><i class="fas fa-weight-scale"></i> Weight (kg)</label>
+                    <div style="position: relative;">
+                      <input type="number" name="weight" value="{{ profile.weight|default_if_none:'' }}" step="0.1" placeholder="e.g., 70.5" style="padding-right: 2.5rem;">
+                      <span style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray); font-weight: 500; pointer-events: none;">kg</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label><i class="fas fa-birthday-cake"></i> Date of Birth</label>
+                    <input type="date" name="date_of_birth" value="{{ profile.date_of_birth|date:'Y-m-d'|default_if_none:'' }}">
+                  </div>
+                  <div class="form-group">
+                    <label><i class="fas fa-venus-mars"></i> Gender</label>
+                    <select name="gender">
+                      <option value="">Select gender</option>
+                      <option value="M" {% if profile.gender == 'M' %}selected{% endif %}>👨 Male</option>
+                      <option value="F" {% if profile.gender == 'F' %}selected{% endif %}>👩 Female</option>
+                      <option value="O" {% if profile.gender == 'O' %}selected{% endif %}>🧑 Other</option>
+                      <option value="P" {% if profile.gender == 'P' %}selected{% endif %}>🤝 Prefer not to say</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div class="form-group">
-                <label>Dietary Preferences</label>
-                <textarea name="dietary_preferences" placeholder="e.g., Vegetarian, Low-carb">{{ profile.dietary_preferences|default_if_none:'' }}</textarea>
+              <!-- Lifestyle Section -->
+              <div style="margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 2px solid var(--gray-light);">
+                <h3 style="font-size: 1rem; font-weight: 700; color: var(--dark); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                  <i class="fas fa-heart-pulse" style="color: #EF4444; font-size: 1.25rem;"></i> Lifestyle & Goals
+                </h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label><i class="fas fa-person-running"></i> Activity Level</label>
+                    <select name="activity_level">
+                      <option value="">Select activity level</option>
+                      <option value="sedentary" {% if profile.activity_level == 'sedentary' %}selected{% endif %}>🪑 Sedentary (Little or no exercise)</option>
+                      <option value="light" {% if profile.activity_level == 'light' %}selected{% endif %}>🚶 Light (Exercise 1-3 days/week)</option>
+                      <option value="moderate" {% if profile.activity_level == 'moderate' %}selected{% endif %}>🏃 Moderate (Exercise 3-5 days/week)</option>
+                      <option value="active" {% if profile.activity_level == 'active' %}selected{% endif %}>💪 Active (Exercise 6-7 days/week)</option>
+                      <option value="very_active" {% if profile.activity_level == 'very_active' %}selected{% endif %}>🏋️ Very Active (Intense exercise daily)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label><i class="fas fa-bullseye"></i> Health Goals</label>
+                    <input type="text" name="health_goals" value="{{ profile.health_goals|default_if_none:'' }}" placeholder="e.g., Lose weight, Build muscle, Get fit">
+                  </div>
+                </div>
               </div>
 
-              <div class="form-group">
-                <label>Allergies & Restrictions</label>
-                <input type="text" name="allergies" value="{{ profile.food_allergies|default_if_none:'' }}" placeholder="e.g., Peanuts, Gluten">
+              <!-- Dietary Section -->
+              <div style="margin-bottom: 2.5rem;">
+                <h3 style="font-size: 1rem; font-weight: 700; color: var(--dark); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                  <i class="fas fa-utensils" style="color: #F59E0B; font-size: 1.25rem;"></i> Dietary Preferences
+                </h3>
+                
+                <div class="form-group">
+                  <label><i class="fas fa-leaf"></i> Dietary Preferences</label>
+                  <textarea name="dietary_preferences" placeholder="e.g., Vegetarian, Vegan, Low-carb, Keto, Paleo, Gluten-free" style="min-height: 80px;">{{ profile.dietary_preferences|default_if_none:'' }}</textarea>
+                  <p style="font-size: 0.75rem; color: var(--gray); margin-top: 0.5rem; font-weight: 500;">💡 Tip: Be specific about your dietary restrictions and preferences for better meal recommendations</p>
+                </div>
+
+                <div class="form-group">
+                  <label><i class="fas fa-allergies"></i> Allergies & Restrictions</label>
+                  <input type="text" name="allergies" value="{{ profile.food_allergies|default_if_none:'' }}" placeholder="e.g., Peanuts, Shellfish, Dairy, Gluten" style="margin-bottom: 0.5rem;">
+                  <p style="font-size: 0.75rem; color: var(--gray); font-weight: 500;">⚠️ Important: List all allergies and food restrictions for your safety and accurate meal planning</p>
+                </div>
               </div>
 
+              <!-- Action Buttons -->
               <div class="button-group">
-                <button type="submit" class="btn btn-primary">💾 Save Changes</button>
-                <a href="{% url 'health' %}" class="btn btn-secondary">📊 New Assessment</a>
-                <a href="{% url 'assessment_history' %}" class="btn btn-secondary">📈 History</a>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                  <i class="fas fa-save"></i> Save All Changes
+                </button>
+                <a href="{% url 'health' %}" class="btn btn-secondary" style="flex: 1;">
+                  <i class="fas fa-clipboard-check"></i> New Assessment
+                </a>
+                <a href="{% url 'assessment_history' %}" class="btn btn-secondary" style="flex: 1;">
+                  <i class="fas fa-history"></i> View History
+                </a>
               </div>
             </form>
           </div>
 
+          <div class="card" id="progress">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i class="fas fa-chart-line"></i> Progress Tracking</h2>
+                <p style="margin-bottom: 0; color: var(--gray); font-weight: 500; font-size: 0.95rem;">Monitor your daily health metrics and track your wellness journey</p>
+              </div>
+              <div id="progressStats" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                <div style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%); color: white; padding: 0.875rem 1.25rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2); display: flex; flex-direction: column; align-items: center; gap: 0.35rem; transition: all 0.3s ease; border: 1px solid rgba(30, 41, 59, 0.15); cursor: default; min-width: 140px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(16, 185, 129, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(16, 185, 129, 0.2)'">
+                  <div style="font-size: 0.65rem; opacity: 0.95; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;">📊 Total</div>
+                  <div style="font-size: 1.75rem; font-weight: 900; line-height: 1.1;" id="entryCount">0</div>
+                  <div style="font-size: 0.65rem; opacity: 0.9; font-weight: 500;">Entries</div>
+                </div>
+                
+                <!-- Download Dropdown -->
+                <div style="position: relative; display: inline-block;">
+                  <button id="downloadDropdownBtn" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; padding: 0.875rem 1.25rem; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2); font-size: 0.9rem; display: flex; align-items: center; gap: 0.6rem; letter-spacing: 0.3px; border: 1px solid rgba(30, 41, 59, 0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(139, 92, 246, 0.3)'; this.style.background='linear-gradient(135deg, #9d69ff 0%, #7c3aed 100%)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(139, 92, 246, 0.2)'; this.style.background='linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)'">
+                    <i class="fas fa-download" style="font-size: 0.9rem;"></i> 
+                    <span style="font-weight: 800;">Export</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.65rem; margin-left: 0.15rem; transition: transform 0.3s;" id="downloadChevron"></i>
+                  </button>
+                  
+                  <div id="downloadDropdownMenu" style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e5e7eb; border-radius: 12px; box-shadow: 0 12px 35px rgba(0,0,0,0.14); z-index: 1000; min-width: 210px; margin-top: 0.75rem; overflow: hidden;">
+                    <div style="padding: 0.65rem 1rem; border-bottom: 1px solid #f3f4f6; background: #f9fafb;">
+                      <p style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Reports</p>
+                    </div>
+                    <button onclick="exportProgressTracking('daily')" style="width: 100%; text-align: left; padding: 0.875rem 1rem; border: none; background: transparent; cursor: pointer; font-size: 0.9rem; color: #374151; transition: all 0.2s; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.65rem; font-weight: 500;" onmouseover="this.style.background='#f9fafb'; this.style.color='#10B981'; this.style.fontWeight='700'; this.style.paddingLeft='1.25rem'" onmouseout="this.style.background='transparent'; this.style.color='#374151'; this.style.fontWeight='500'; this.style.paddingLeft='1rem'">
+                      <i class="fas fa-calendar-day" style="color: #3b82f6; width: 18px; font-size: 1rem;"></i> 
+                      <div>
+                        <div style="font-weight: 700; font-size: 0.9rem;">Daily</div>
+                        <div style="font-size: 0.7rem; opacity: 0.7;">Today</div>
+                      </div>
+                    </button>
+                    <button onclick="exportProgressTracking('weekly')" style="width: 100%; text-align: left; padding: 0.875rem 1rem; border: none; background: transparent; cursor: pointer; font-size: 0.9rem; color: #374151; transition: all 0.2s; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.65rem; font-weight: 500;" onmouseover="this.style.background='#f9fafb'; this.style.color='#06b6d4'; this.style.fontWeight='700'; this.style.paddingLeft='1.25rem'" onmouseout="this.style.background='transparent'; this.style.color='#374151'; this.style.fontWeight='500'; this.style.paddingLeft='1rem'">
+                      <i class="fas fa-calendar-week" style="color: #06b6d4; width: 18px; font-size: 1rem;"></i> 
+                      <div>
+                        <div style="font-weight: 700; font-size: 0.9rem;">Weekly</div>
+                        <div style="font-size: 0.7rem; opacity: 0.7;">7 days</div>
+                      </div>
+                    </button>
+                    <button onclick="exportProgressTracking('monthly')" style="width: 100%; text-align: left; padding: 0.875rem 1rem; border: none; background: transparent; cursor: pointer; font-size: 0.9rem; color: #374151; transition: all 0.2s; display: flex; align-items: center; gap: 0.65rem; font-weight: 500;" onmouseover="this.style.background='#f9fafb'; this.style.color='#f59e0b'; this.style.fontWeight='700'; this.style.paddingLeft='1.25rem'" onmouseout="this.style.background='transparent'; this.style.color='#374151'; this.style.fontWeight='500'; this.style.paddingLeft='1rem'">
+                      <i class="fas fa-calendar" style="color: #f59e0b; width: 18px; font-size: 1rem;"></i> 
+                      <div>
+                        <div style="font-weight: 700; font-size: 0.9rem;">Monthly</div>
+                        <div style="font-size: 0.7rem; opacity: 0.7;">30 days</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="progress-container">
+              <!-- Form Column -->
+              <div class="progress-form-container">
+                <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--dark); font-weight: 700; display: flex; align-items: center; gap: 0.75rem;">
+                  <i class="fas fa-plus-circle" style="color: var(--primary); font-size: 1.25rem;"></i> Log Today's Progress
+                </h3>
+                
+                <form id="progressForm" method="post" action="{% url 'progress_tracking_add' %}" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                  {% csrf_token %}
+                  
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.875rem; font-weight: 600; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.625rem;">
+                      <i class="fas fa-calendar-alt" style="color: var(--primary); width: 16px;"></i> Date
+                    </label>
+                    <input type="date" name="date" id="progressDate" required style="width: 100%; padding: 0.875rem; border: 1.5px solid var(--gray-light); border-radius: 10px; font-size: 0.95rem; background: white; transition: all 0.3s; font-weight: 500;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)'" onblur="this.style.borderColor='var(--gray-light)'; this.style.boxShadow='none'">
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.875rem; font-weight: 600; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.625rem;">
+                      <i class="fas fa-weight" style="color: #10B981; width: 16px;"></i> Weight (kg)
+                    </label>
+                    <div style="position: relative;">
+                      <input type="number" name="weight" step="0.1" min="20" max="300" placeholder="e.g., 70.5" style="width: 100%; padding: 0.875rem 2.5rem 0.875rem 0.875rem; border: 1.5px solid var(--gray-light); border-radius: 10px; font-size: 0.95rem; transition: all 0.3s;" onfocus="this.style.borderColor='#10B981'; this.style.boxShadow='0 0 0 3px rgba(16, 185, 129, 0.1)'" onblur="this.style.borderColor='var(--gray-light)'; this.style.boxShadow='none'">
+                      <span style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray); font-weight: 600; pointer-events: none;">kg</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.875rem; font-weight: 600; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.625rem;">
+                      <i class="fas fa-shoe-prints" style="color: #3b82f6; width: 16px;"></i> Activity Level
+                    </label>
+                    <select name="activity_level" style="width: 100%; padding: 0.875rem; border: 1.5px solid var(--gray-light); border-radius: 10px; font-size: 0.95rem; background: white; cursor: pointer; transition: all 0.3s; font-weight: 500;" onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)'" onblur="this.style.borderColor='var(--gray-light)'; this.style.boxShadow='none'">
+                      <option value="">Select activity level</option>
+                      <option value="sedentary">🪑 Sedentary</option>
+                      <option value="light">🚶 Light</option>
+                      <option value="moderate">🏃 Moderate</option>
+                      <option value="active">💪 Active</option>
+                      <option value="very_active">🏋️ Very Active</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.875rem; font-weight: 600; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.625rem;">
+                      <i class="fas fa-target" style="color: #f59e0b; width: 16px;"></i> Health Goal
+                    </label>
+                    <select name="health_goal" style="width: 100%; padding: 0.875rem; border: 1.5px solid var(--gray-light); border-radius: 10px; font-size: 0.95rem; background: white; cursor: pointer; transition: all 0.3s; font-weight: 500;" onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 3px rgba(245, 158, 11, 0.1)'" onblur="this.style.borderColor='var(--gray-light)'; this.style.boxShadow='none'">
+                      <option value="">Select health goal</option>
+                      <option value="weight_loss">⬇️ Lose Weight</option>
+                      <option value="maintain">↔️ Maintain Weight</option>
+                      <option value="muscle_gain">⬆️ Build Muscle</option>
+                      <option value="improve_health">❤️ Improve Health</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.875rem; font-weight: 600; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.625rem;">
+                      <i class="fas fa-comment-dots" style="color: #8b5cf6; width: 16px;"></i> Notes & Observations
+                    </label>
+                    <textarea name="notes" placeholder="How are you feeling? Any challenges or wins today?" style="width: 100%; padding: 0.875rem; border: 1.5px solid var(--gray-light); border-radius: 10px; font-size: 0.95rem; min-height: 110px; resize: vertical; background: white; transition: all 0.3s; font-family: inherit;" onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)'" onblur="this.style.borderColor='var(--gray-light)'; this.style.boxShadow='none'"></textarea>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; background: var(--primary-gradient); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s ease; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); margin-top: 0.5rem;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(79, 70, 229, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(79, 70, 229, 0.2)'">
+                    <i class="fas fa-save" style="margin-right: 0.5rem;"></i> Save Progress Entry
+                  </button>
+                </form>
+              </div>
+
+              <!-- History Column -->
+              <div class="progress-history-container">
+                <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--dark); font-weight: 700; display: flex; align-items: center; gap: 0.75rem;">
+                  <i class="fas fa-history" style="color: var(--primary); font-size: 1.25rem;"></i> Your Progress History
+                </h3>
+                <div id="progressEntries">
+                  <div style="text-align: center; padding: 3rem 2rem; color: var(--gray);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.6;"></i>
+                    <p style="font-size: 0.95rem; font-weight: 500;">Loading your progress entries...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="card" id="assessments">
-            <h2 class="card-title">📊 Recent Assessments</h2>
+            <div class="card-header">
+              <h2 class="card-title"><i class="fas fa-clipboard-check"></i> Recent Assessments</h2>
+            </div>
             {% if assessments %}
               <div class="assessments-list">
                 {% for assessment in assessments %}
@@ -958,10 +1445,12 @@
           </div>
 
           <div class="card" id="account">
-            <h2 class="card-title">⚙️ Account Settings</h2>
+            <div class="card-header">
+              <h2 class="card-title"><i class="fas fa-cog"></i> Account Settings</h2>
+            </div>
             <p style="margin-bottom: 1.5rem; color: var(--gray); font-weight: 500;">Member since {{ user.date_joined|date:"F d, Y" }}</p>
             <div class="button-group">
-              <a href="{% url 'delete_account' %}" class="btn btn-danger">🗑️ Delete Account</a>
+              <a href="{% url 'delete_account' %}" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Delete Account</a>
             </div>
           </div>
         </div>
@@ -970,7 +1459,7 @@
   </main>
 
   <footer>
-    <p>&copy; 2025 NutriAI — Your AI-Powered Nutrition Companion</p>
+    <p>&copy; 2025 FitWell — Your AI-Powered Nutrition Companion</p>
   </footer>
 
   <script>
@@ -987,6 +1476,147 @@
         }, 100);
       }
     }
+
+    // Set today's date in progress form
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('progressDate').value = today;
+      loadProgressEntries();
+    });
+
+    // Load progress entries
+    async function loadProgressEntries() {
+      try {
+        const resp = await fetch('/api/progress-tracking/', { credentials: 'same-origin' });
+        const data = await resp.json();
+        
+        const container = document.getElementById('progressEntries');
+        if (!data.entries || data.entries.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state" style="padding: 2rem;">
+              <div class="empty-icon"><i class="fas fa-chart-line"></i></div>
+              <p>No progress entries yet. Start tracking your health metrics!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = data.entries.map(entry => `
+          <div class="progress-entry">
+            <div class="progress-entry-header">
+              <div class="progress-entry-date">${new Date(entry.date).toLocaleDateString('en-US', {weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'})}</div>
+              <button onclick="deleteProgressEntry(${entry.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.125rem; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="progress-entry-metrics">
+              ${entry.weight ? `<div class="progress-metric progress-metric-weight">
+                <span class="progress-metric-label"><i class="fas fa-weight"></i> Weight</span>
+                <strong class="progress-metric-value">${entry.weight}</strong>
+                <span class="progress-metric-unit">kg</span>
+              </div>` : ''}
+              ${entry.activity_level ? `<div class="progress-metric progress-metric-activity">
+                <span class="progress-metric-label"><i class="fas fa-shoe-prints"></i> Activity</span>
+                <strong class="progress-metric-value" style="text-transform: capitalize;">${entry.activity_level.replace('_', ' ')}</strong>
+              </div>` : ''}
+              ${entry.health_goal ? `<div class="progress-metric progress-metric-goal">
+                <span class="progress-metric-label"><i class="fas fa-target"></i> Goal</span>
+                <strong class="progress-metric-value" style="text-transform: capitalize;">${entry.health_goal.replace('_', ' ')}</strong>
+              </div>` : ''}
+            </div>
+            ${entry.notes ? `<div class="progress-metric progress-metric-notes" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-light);">
+              <span class="progress-metric-label"><i class="fas fa-comment"></i> Notes</span>
+              <p style="color: var(--dark); font-size: 0.95rem; margin: 0; word-wrap: break-word;">${entry.notes}</p>
+            </div>` : ''}
+          </div>
+        `).join('');
+        
+        // Update entry count
+        document.getElementById('entryCount').textContent = data.entries.length;
+      } catch (err) {
+        console.error('Error loading progress entries:', err);
+      }
+    }
+
+    // Delete progress entry
+    async function deleteProgressEntry(id) {
+      if (!confirm('Delete this progress entry?')) return;
+      try {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const resp = await fetch(`/api/progress-tracking/${id}/delete/`, {
+          method: 'DELETE',
+          credentials: 'same-origin',
+          headers: { 'X-CSRFToken': token }
+        });
+        if (resp.ok) {
+          loadProgressEntries();
+        }
+      } catch (err) {
+        console.error('Error deleting entry:', err);
+      }
+    }
+
+    function exportProgressTracking(period) {
+      window.location.href = `/export/progress-tracking/pdf/?period=${period}`;
+    }
+
+    // Dropdown toggle
+    document.getElementById('downloadDropdownBtn').addEventListener('click', function() {
+      const menu = document.getElementById('downloadDropdownMenu');
+      const chevron = document.getElementById('downloadChevron');
+      const isOpen = menu.style.display !== 'none';
+      menu.style.display = isOpen ? 'none' : 'block';
+      chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+      chevron.style.transition = 'transform 0.3s ease';
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('downloadDropdownBtn');
+      const menu = document.getElementById('downloadDropdownMenu');
+      const chevron = document.getElementById('downloadChevron');
+      if (!event.target.closest('[id="downloadDropdownBtn"], [id="downloadDropdownMenu"]')) {
+        menu.style.display = 'none';
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    // Handle progress form submission
+    document.getElementById('progressForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        date: formData.get('date'),
+        weight: parseFloat(formData.get('weight')) || null,
+        activity_level: formData.get('activity_level') || null,
+        health_goal: formData.get('health_goal') || null,
+        notes: formData.get('notes')
+      };
+
+      try {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const resp = await fetch('/api/progress-tracking/add/', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': token
+          },
+          body: JSON.stringify(data)
+        });
+        const result = await resp.json();
+        if (result.success) {
+          e.target.reset();
+          const today = new Date().toISOString().split('T')[0];
+          document.getElementById('progressDate').value = today;
+          loadProgressEntries();
+          alert('Progress entry saved successfully!');
+        } else {
+          alert('Error saving progress: ' + (result.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Error saving progress:', err);
+        alert('Error saving progress');
+      }
+    });
 
     document.querySelectorAll('a[href*="delete_account"]').forEach(btn => {
       btn.addEventListener('click', e => {

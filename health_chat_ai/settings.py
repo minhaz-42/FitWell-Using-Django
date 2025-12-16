@@ -137,6 +137,44 @@ LOGIN_REDIRECT_URL = 'home'  # ADD THESE LINES
 LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = 'login'
 
+# Email Configuration for Account Confirmation
+# ============================================
+# EMAIL CONFIGURATION - GMAIL SMTP
+# ============================================
+# For development, use Gmail SMTP or console backend
+# For production, use a dedicated email service (SendGrid, Brevo, etc.)
+# ============================================
+
+# Email Backend Configuration
+if DEBUG:
+    # Development: Use Gmail SMTP for actual email delivery
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.environ.get('GMAIL_EMAIL', 'mdt818809@gmail.com')
+    EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD', 'bywp xdut gupx ifrw')
+else:
+    # Production: Configure your production email service here
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@nutriai.com')
+DEFAULT_FROM_NAME = 'FitWell'
+EMAIL_CONFIRMATION_EXPIRY_HOURS = 24
+
+# CSRF Configuration
+# ==================
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False  # JavaScript needs to read CSRF token
+CSRF_COOKIE_AGE = 31449600  # One year
+CSRF_COOKIE_SAMESITE = 'Lax'  # Allow same-site form submissions
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

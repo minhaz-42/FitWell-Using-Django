@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assessment Details — NutriAI</title>
+  <title>Analysis Details — FitWell</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Unified Design System */
+    /* Enhanced Design System */
     :root {
       --primary: #4F46E5;
       --primary-dark: #4338CA;
@@ -50,14 +51,15 @@
       padding: 0 32px;
     }
     
-    /* Header */
+    /* Enhanced Header */
     header {
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(30, 41, 59, 0.95);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid rgba(226, 232, 240, 0.8);
       position: sticky;
       top: 0;
       z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     }
     
     .header-content {
@@ -75,6 +77,11 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      transition: var(--transition);
+    }
+    
+    .logo:hover {
+      transform: scale(1.05);
     }
     
     .logo::before {
@@ -94,6 +101,18 @@
       padding: 10px 16px;
       border-radius: var(--border-radius-sm);
       transition: var(--transition-fast);
+      position: relative;
+    }
+    
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 16px;
+      width: 0;
+      height: 2px;
+      background: var(--primary);
+      transition: width 0.3s ease;
     }
     
     .nav-links a:hover {
@@ -101,37 +120,74 @@
       background: var(--primary-light);
     }
     
-    /* Main Content */
+    .nav-links a:hover::after {
+      width: calc(100% - 32px);
+    }
+    
+    /* Enhanced Main Content */
     .main-content {
-      padding: 2rem 0;
+      padding: 3rem 0;
       min-height: calc(100vh - 80px);
     }
     
     .page-header {
       margin-bottom: 3rem;
+      text-align: center;
     }
     
     .page-header h1 {
       font-size: 2.5rem;
-      font-weight: 700;
+      font-weight: 800;
       margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
     
-    /* Cards */
+    .page-header p {
+      color: var(--gray);
+      font-size: 1.125rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    /* Enhanced Cards */
     .card {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(30, 41, 59, 0.95);
       border-radius: var(--border-radius);
       box-shadow: var(--shadow-lg);
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(30, 41, 59, 0.8);
       backdrop-filter: blur(10px);
       margin-bottom: 2rem;
+      transition: var(--transition);
+      position: relative;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+    }
+    
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary-gradient);
     }
     
     .card-header {
       background: var(--primary-gradient);
       color: white;
       padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
     
     .card-body {
@@ -141,27 +197,49 @@
     .card h2 {
       font-size: 1.5rem;
       margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
     
-    /* Stats Grid */
+    /* Enhanced Stats Grid */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.5rem;
       margin-bottom: 2rem;
     }
     
     .stat-card {
-      background: var(--light-gray);
-      padding: 1.5rem;
+      background: linear-gradient(135deg, var(--light) 0%, var(--light-gray) 100%);
+      padding: 1.75rem;
       border-radius: var(--border-radius-sm);
       text-align: center;
+      border: 1px solid var(--gray-light);
       transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary-gradient);
     }
     
     .stat-card:hover {
       transform: translateY(-5px);
       box-shadow: var(--shadow);
+    }
+    
+    .stat-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: var(--primary);
     }
     
     .stat-value {
@@ -177,35 +255,44 @@
       font-weight: 600;
     }
     
-    /* BMI Badge */
+    /* Enhanced BMI Badge */
     .bmi-badge {
-      display: inline-block;
-      padding: 0.75rem 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
       border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
     }
     
-    .bmi-underweight { background: #3b82f6; color: white; }
-    .bmi-normal { background: var(--success); color: white; }
-    .bmi-overweight { background: var(--warning); color: white; }
-    .bmi-obese { background: var(--danger); color: white; }
+    .bmi-underweight { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+    .bmi-normal { background: linear-gradient(135deg, var(--success) 0%, #059669 100%); color: white; }
+    .bmi-overweight { background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%); color: white; }
+    .bmi-obese { background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%); color: white; }
     
-    /* Tips Section */
+    /* Enhanced Tips Section */
     .tips-section {
-      background: var(--light-gray);
-      padding: 1.5rem;
+      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+      padding: 1.75rem;
       border-radius: var(--border-radius-sm);
       margin-bottom: 1.5rem;
+      border-left: 4px solid var(--success);
+      transition: var(--transition);
+    }
+    
+    .tips-section:hover {
+      transform: translateX(5px);
     }
     
     .tips-section h3 {
-      color: var(--primary);
+      color: var(--success);
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
     }
     
     .tips-list {
@@ -215,8 +302,15 @@
     .tips-list li {
       padding: 0.75rem 0;
       border-bottom: 1px solid var(--gray-light);
-      padding-left: 1.5rem;
+      padding-left: 2rem;
       position: relative;
+      transition: var(--transition-fast);
+    }
+    
+    .tips-list li:hover {
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+      padding-left: 2.5rem;
     }
     
     .tips-list li:last-child {
@@ -226,27 +320,40 @@
     .tips-list li::before {
       content: "✓";
       position: absolute;
-      left: 0;
+      left: 0.75rem;
       color: var(--success);
       font-weight: 700;
+      font-size: 1.125rem;
     }
     
-    /* Meals Section */
+    /* Enhanced Meals Section */
     .meals-section {
       margin-bottom: 2rem;
     }
     
     .meal-item {
-      padding: 1.5rem;
+      padding: 1.75rem;
       border: 1px solid var(--gray-light);
       border-radius: var(--border-radius-sm);
-      margin-bottom: 1rem;
-      background: var(--light-gray);
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, var(--light) 0%, var(--light-gray) 100%);
       transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .meal-item::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--primary-gradient);
     }
     
     .meal-item:hover {
-      transform: translateY(-3px);
+      transform: translateY(-5px);
       box-shadow: var(--shadow);
       border-color: var(--primary-light);
     }
@@ -254,73 +361,106 @@
     .meal-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 1rem;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 1rem;
     }
     
     .meal-name {
       font-weight: 700;
-      font-size: 1.125rem;
+      font-size: 1.25rem;
       color: var(--dark);
     }
     
     .meal-type {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
       background: var(--primary-gradient);
       color: white;
-      padding: 0.25rem 0.75rem;
-      border-radius: 12px;
-      font-size: 0.75rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
       font-weight: 600;
+      box-shadow: var(--shadow);
     }
     
     .meal-details {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1rem;
-      margin: 1rem 0;
-      padding: 1rem 0;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+      padding: 1.5rem 0;
       border-top: 1px solid var(--gray-light);
       border-bottom: 1px solid var(--gray-light);
     }
     
     .meal-detail {
       text-align: center;
+      background: white;
+      padding: 1rem;
+      border-radius: var(--border-radius-sm);
+      box-shadow: var(--shadow);
+      transition: var(--transition-fast);
+    }
+    
+    .meal-detail:hover {
+      transform: translateY(-3px);
     }
     
     .meal-detail-value {
-      font-weight: 700;
+      font-weight: 800;
       color: var(--primary);
-      font-size: 1.125rem;
+      font-size: 1.25rem;
+      margin-bottom: 0.25rem;
     }
     
     .meal-detail-label {
       color: var(--gray);
       font-size: 0.8rem;
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     
     .meal-description {
       color: var(--gray);
-      margin-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.6;
     }
     
-    /* Buttons */
+    /* Enhanced Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      padding: 1rem 1.5rem;
+      gap: 0.75rem;
+      padding: 1rem 1.75rem;
       border: none;
       border-radius: var(--border-radius-sm);
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       transition: var(--transition);
       text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: var(--transition);
+    }
+    
+    .btn:hover::before {
+      left: 100%;
     }
     
     .btn-primary {
@@ -342,17 +482,127 @@
     
     .btn-outline:hover {
       background: var(--light-gray);
-      border-color: var(--gray);
+      border-color: var(--primary);
+      color: var(--primary);
       transform: translateY(-2px);
     }
     
-    /* Footer */
+    .btn-success {
+      background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+    
+    .btn-success:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+    
+    /* Enhanced Footer */
     footer {
       background: var(--dark);
       color: white;
       padding: 2rem 0;
       margin-top: 4rem;
       text-align: center;
+    }
+    
+    /* Floating Elements */
+    .floating-elements {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .floating-element {
+      position: absolute;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(236, 72, 153, 0.03) 100%);
+      border-radius: 50%;
+      filter: blur(60px);
+      animation: float 20s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) translateX(0px); }
+      50% { transform: translateY(-20px) translateX(10px); }
+    }
+    
+    /* NEW: Action Buttons Section */
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      justify-content: center;
+    }
+    
+    /* NEW: Improved Meal Tags */
+    .meal-tags {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .meal-tag {
+      background: #e0f2fe;
+      color: #0c4a6e;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .meal-tag.vegan {
+      background: #f0fdf4;
+      color: #15803d;
+    }
+    
+    .meal-tag.gluten-free {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .meal-tag.dairy-free {
+      background: #fcf0f9;
+      color: #831843;
+    }
+    
+    /* NEW: Meal Actions */
+    .meal-actions {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    /* NEW: Empty State Styling */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+    }
+    
+    .empty-state-icon {
+      font-size: 3rem;
+      color: var(--gray-light);
+      margin-bottom: 1rem;
+    }
+    
+    /* NEW: Improved Calorie Recommendations */
+    .calorie-recommendations {
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--gray-light);
+    }
+    
+    /* NEW: Improved Card Headers */
+    .card-header h2 {
+      margin: 0;
     }
     
     /* Responsive */
@@ -384,6 +634,22 @@
         width: 100%;
         justify-content: center;
       }
+      
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .meal-details {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      .meal-actions {
+        flex-direction: column;
+      }
     }
 
     @media (max-width: 480px) {
@@ -400,27 +666,38 @@
       }
 
       .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
+      }
+      
+      .meal-details {
+        grid-template-columns: 1fr;
       }
     }
   </style>
+<link rel="stylesheet" href="/static/css/nourish_theme.css">
 </head>
 <body>
+  <!-- Floating Background Elements -->
+  <div class="floating-elements">
+    <div class="floating-element" style="width: 400px; height: 400px; top: -100px; right: -50px;"></div>
+    <div class="floating-element" style="width: 300px; height: 300px; bottom: 100px; left: 50px; animation-delay: 5s;"></div>
+  </div>
+
   <!-- Header -->
   <header>
     <div class="container">
       <div class="header-content">
-        <a href="{% url 'home' %}" class="logo">NutriAI</a>
+        <a href="{% url 'home' %}" class="logo">FitWell</a>
         <div class="nav-links">
-          <a href="{% url 'home' %}">Home</a>
-          <a href="{% url 'health' %}">Health Assessment</a>
-          <a href="{% url 'chat' %}">AI Nutritionist</a>
-          <a href="{% url 'profile' %}">Profile</a>
+          <a href="{% url 'home' %}">Dashboard</a>
+          <a href="{% url 'health' %}">Body Analysis</a>
+          <a href="{% url 'chat' %}">Ask Coach</a>
+          <a href="{% url 'profile' %}">My Account</a>
           {% if user.is_authenticated %}
-            <a href="{% url 'logout' %}">Logout</a>
+            <a href="{% url 'logout' %}">Sign Out</a>
           {% else %}
-            <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'register' %}">Register</a>
+            <a href="{% url 'login' %}">Sign In</a>
+            <a href="{% url 'register' %}">Sign Up</a>
           {% endif %}
         </div>
       </div>
@@ -432,42 +709,69 @@
     <div class="container">
       <div class="page-header">
         <h1>Assessment Details</h1>
-        <p style="color: var(--gray); font-size: 1.125rem;">📅 {{ assessment.assessment_date|date:"F j, Y \a\t g:i A" }}</p>
+        <p><i class="fas fa-calendar-alt"></i> {{ assessment.assessment_date|date:"F j, Y \a\t g:i A" }}</p>
+      </div>
+
+      <!-- Action Buttons - Moved to top for better accessibility -->
+      <div class="action-buttons">
+        <a href="{% url 'health' %}" class="btn btn-primary">
+          <i class="fas fa-plus"></i> New Assessment
+        </a>
+        <button onclick="downloadAssessmentPDF()" class="btn btn-success">
+          <i class="fas fa-file-pdf"></i> Download as PDF
+        </button>
+        <a href="{% url 'assessment_history' %}" class="btn btn-outline">
+          <i class="fas fa-chart-bar"></i> Back to History
+        </a>
+        <a href="{% url 'profile' %}" class="btn btn-outline">
+          <i class="fas fa-user"></i> Back to Profile
+        </a>
       </div>
 
       <!-- Health Metrics -->
       <div class="card">
         <div class="card-header">
+          <i class="fas fa-heartbeat"></i>
           <h2>Your Health Metrics</h2>
         </div>
         <div class="card-body">
           <div class="bmi-badge bmi-{{ assessment.bmi_category|lower }}">
-            {{ assessment.bmi_category|upper }} - BMI: {{ assessment.bmi|floatformat:1 }}
+            <i class="fas fa-chart-line"></i>
+            <div>
+              <div style="font-size: 0.8rem; opacity: 0.9;">BMI CATEGORY</div>
+              <div>{{ assessment.bmi_category|upper }} - BMI: {{ assessment.bmi|floatformat:1 }}</div>
+            </div>
           </div>
 
           <div class="stats-grid">
             <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-ruler-vertical"></i></div>
               <div class="stat-value">{{ assessment.height }}</div>
               <div class="stat-label">Height (cm)</div>
             </div>
             <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-weight-scale"></i></div>
               <div class="stat-value">{{ assessment.weight }}</div>
               <div class="stat-label">Weight (kg)</div>
             </div>
             <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-birthday-cake"></i></div>
               <div class="stat-value">{{ assessment.age|default:"-" }}</div>
               <div class="stat-label">Age</div>
             </div>
             <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-venus-mars"></i></div>
               <div class="stat-value">{{ assessment.gender|default:"-" }}</div>
               <div class="stat-label">Gender</div>
             </div>
             <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-person-running"></i></div>
               <div class="stat-value">{{ assessment.activity_level|title }}</div>
               <div class="stat-label">Activity Level</div>
             </div>
             {% if assessment.bmr %}
             <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-fire"></i></div>
               <div class="stat-value">{{ assessment.bmr|floatformat:0 }}</div>
               <div class="stat-label">BMR (cal/day)</div>
             </div>
@@ -475,17 +779,21 @@
           </div>
 
           {% if assessment.maintenance_calories or assessment.target_calories %}
-          <div style="padding-top: 1.5rem; border-top: 1px solid var(--gray-light);">
-            <h3 style="margin-bottom: 1rem;">💪 Calorie Recommendations</h3>
+          <div class="calorie-recommendations">
+            <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+              <i class="fas fa-bolt" style="color: var(--accent);"></i> Calorie Recommendations
+            </h3>
             <div class="stats-grid">
               {% if assessment.maintenance_calories %}
               <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-balance-scale"></i></div>
                 <div class="stat-value">{{ assessment.maintenance_calories }}</div>
                 <div class="stat-label">Maintenance Calories</div>
               </div>
               {% endif %}
               {% if assessment.target_calories %}
               <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
                 <div class="stat-value">{{ assessment.target_calories }}</div>
                 <div class="stat-label">Target Calories</div>
               </div>
@@ -500,12 +808,13 @@
       {% if health_tips %}
       <div class="card">
         <div class="card-header">
-          <h2>💡 Personalized Health Tips</h2>
+          <i class="fas fa-lightbulb"></i>
+          <h2>Personalized Health Tips</h2>
         </div>
         <div class="card-body">
           {% for tip in health_tips %}
-          <div class="tips-section" style="margin-bottom: 1rem;">
-            <h3>{{ tip|truncatewords:5 }}</h3>
+          <div class="tips-section">
+            <h3><i class="fas fa-check-circle"></i> {{ tip|truncatewords:5 }}</h3>
             <p>{{ tip }}</p>
           </div>
           {% endfor %}
@@ -517,7 +826,8 @@
       {% if meals %}
       <div class="card">
         <div class="card-header">
-          <h2>🍽️ Recommended Meals</h2>
+          <i class="fas fa-utensils"></i>
+          <h2>Recommended Meals</h2>
         </div>
         <div class="card-body">
           <div class="meals-section">
@@ -528,7 +838,10 @@
                   <div class="meal-name">{{ meal.name }}</div>
                   <p class="meal-description">{{ meal.description|truncatewords:20 }}</p>
                 </div>
-                <div class="meal-type">{{ meal.get_meal_type_display }}</div>
+                <div class="meal-type">
+                  <i class="fas fa-{{ meal.meal_type|lower }}"></i>
+                  {{ meal.get_meal_type_display }}
+                </div>
               </div>
 
               <div class="meal-details">
@@ -562,27 +875,46 @@
 
               {% if meal.ingredients %}
               <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-light);">
-                <strong style="color: var(--dark);">Ingredients:</strong>
-                <p style="color: var(--gray); margin-top: 0.5rem;">{{ meal.ingredients|truncatewords:30 }}</p>
+                <strong style="color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <i class="fas fa-list"></i> Ingredients:
+                </strong>
+                <p style="color: var(--gray); line-height: 1.6;">{{ meal.ingredients|truncatewords:30 }}</p>
               </div>
               {% endif %}
 
               {% if meal.is_vegetarian or meal.is_vegan or meal.is_gluten_free or meal.is_dairy_free %}
-              <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <div class="meal-tags">
                 {% if meal.is_vegetarian %}
-                <span style="background: #e0f2fe; color: #0c4a6e; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">🥬 Vegetarian</span>
+                <span class="meal-tag">
+                  <i class="fas fa-leaf"></i> Vegetarian
+                </span>
                 {% endif %}
                 {% if meal.is_vegan %}
-                <span style="background: #f0fdf4; color: #15803d; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">🌱 Vegan</span>
+                <span class="meal-tag vegan">
+                  <i class="fas fa-seedling"></i> Vegan
+                </span>
                 {% endif %}
                 {% if meal.is_gluten_free %}
-                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">🌾 Gluten Free</span>
+                <span class="meal-tag gluten-free">
+                  <i class="fas fa-wheat"></i> Gluten Free
+                </span>
                 {% endif %}
                 {% if meal.is_dairy_free %}
-                <span style="background: #fcf0f9; color: #831843; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">🥛 Dairy Free</span>
+                <span class="meal-tag dairy-free">
+                  <i class="fas fa-cow"></i> Dairy Free
+                </span>
                 {% endif %}
               </div>
               {% endif %}
+              
+              <div class="meal-actions">
+                <button class="btn btn-outline">
+                  <i class="fas fa-heart"></i> Add to Favorites
+                </button>
+                <button class="btn btn-primary">
+                  <i class="fas fa-shopping-cart"></i> View Recipe
+                </button>
+              </div>
             </div>
             {% endfor %}
           </div>
@@ -590,34 +922,60 @@
       </div>
       {% else %}
       <div class="card">
-        <div class="card-body">
-          <p style="color: var(--gray); text-align: center; padding: 2rem;">No meal suggestions available for this assessment yet.</p>
+        <div class="card-body empty-state">
+          <i class="fas fa-utensils empty-state-icon"></i>
+          <h3 style="color: var(--gray); margin-bottom: 0.5rem;">No Meal Suggestions Yet</h3>
+          <p style="color: var(--gray);">Complete a health assessment to get personalized meal recommendations.</p>
+          <a href="{% url 'health' %}" class="btn btn-primary" style="margin-top: 1.5rem;">
+            <i class="fas fa-plus"></i> Create Assessment
+          </a>
         </div>
       </div>
       {% endif %}
-
-      <!-- Action Buttons -->
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
-        <a href="{% url 'assessment_history' %}" class="btn btn-outline">
-          📊 Back to History
-        </a>
-        <a href="{% url 'health' %}" class="btn btn-primary">
-          ➕ New Assessment
-        </a>
-        <a href="{% url 'profile' %}" class="btn btn-outline">
-          👤 Back to Profile
-        </a>
-      </div>
     </div>
   </main>
 
   <!-- Footer -->
   <footer>
-    <div class="container" style="padding: 2rem 32px;">
+    <div class="container">
       <div style="text-align: center; color: var(--gray-light);">
-        <p>&copy; 2025 NutriAI. All rights reserved.</p>
+        <p>&copy; 2025 FitWell. All rights reserved.</p>
       </div>
     </div>
   </footer>
+
+  <script>
+    function downloadAssessmentPDF() {
+      const assessmentId = '{{ assessment.id }}';
+      const url = `/export/health-assessment/pdf/?id=${assessmentId}`;
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `assessment-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    // Add animation to cards when they come into view
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.card');
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(card);
+      });
+    });
+  </script>
 </body>
 </html>
