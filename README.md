@@ -432,10 +432,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Tanvir Ahmed**
 
 - GitHub: [@minhaz-42](https://github.com/minhaz-42)
-- LinkedIn: [Tanvir Ahmed](https://www.linkedin.com/in/tanvir-ahmed-2b9809370)
-- Instagram: [@_min._.haz_](https://www.instagram.com/_min._.haz_/)
-- Facebook: [Tanvir Ahmed](https://www.facebook.com/share/16buZsF87d/?mibextid=wwXIfr)
-- Email: tanvirahmed.minhaz1@gmail.com
 
 ## 🙏 Acknowledgments
 
@@ -449,8 +445,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Having issues? Need help?
 
-- **Email**: tanvirahmed.minhaz1@gmail.com
-- **GitHub Issues**: [Open an issue](https://github.com/minhaz-42/fitwell/issues)
+- **GitHub Issues**: [Open an issue](https://github.com/minhaz-42/-FitWell-Using-Django/issues)
 
 ## 🗺️ Roadmap
 
