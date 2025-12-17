@@ -61,8 +61,8 @@ A modern, intelligent nutrition and health tracking application powered by AI. F
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/minhaz-42/fitwell.git
-cd fitwell
+git clone https://github.com/minhaz-42/FitWell-Using-Django.git
+cd FitWell-Using-Django
 ```
 
 ### 2. Create Virtual Environment
