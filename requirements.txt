@@ -29,6 +29,10 @@ safetensors>=0.3.0
 # PDF generation
 reportlab>=4.0.0
 
+Django>=4.2
+gunicorn
+whitenoise
+
 # Notes:
 # - `transformers[torch]` will attempt to install a compatible `torch` build. For
 #   Macs without CUDA, you may prefer installing the CPU-only wheel directly, e.g.: 
